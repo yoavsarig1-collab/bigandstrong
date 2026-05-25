@@ -558,6 +558,17 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
     </div>
 
     <div class="settings-section">
+      <div class="settings-label">GitHub Sync (auto-backup)</div>
+      <div class="settings-card">
+        <p>Paste your GitHub token — every "Save Session" quietly backs up all data to your repo. If the app is wiped from your home screen, open the URL again and tap <strong>Restore from GitHub</strong>.</p>
+        <input type="password" id="gh-token-input" placeholder="ghp_..." autocomplete="off" spellcheck="false">
+        <button class="btn-primary" style="margin-top:0;height:44px;font-size:18px" onclick="saveGhToken()">SAVE TOKEN</button>
+        <div class="key-saved" id="gh-token-saved">✓ Sync enabled</div>
+        <button class="btn-secondary" style="margin-top:8px" onclick="manualRestoreFromGitHub()">↓ RESTORE FROM GITHUB</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-label">About you (context for AI)</div>
       <div class="settings-card">
         <p>This helps the AI give better recommendations.</p>
@@ -1399,6 +1410,7 @@ function toggleGroupDay(dk) { setGroupDay(week, dk, !isGroupDay(week, dk)); rend
 function saveSession() {
   persist();
   showToast('Session saved ✓');
+  pushToGitHub(true); // silent background sync
 }
 
 // ─── PROGRESS ───────────────────────────────────────────────────────
@@ -1844,6 +1856,12 @@ function loadSettingsUI() {
     ki.value = '••••••••••••••••';
     ks.style.display = 'block';
   }
+  const gti = document.getElementById('gh-token-input');
+  const gts = document.getElementById('gh-token-saved');
+  if (state.prefs.ghToken) {
+    gti.value = '••••••••••••••••';
+    gts.style.display = 'block';
+  }
   document.getElementById('pref-bw').value = state.prefs.bw || '';
   document.getElementById('pref-notes').value = state.prefs.notes || '';
   document.getElementById('pref-startdate').value = state.prefs.startDate || '';
@@ -2154,6 +2172,152 @@ function toggleCue(dk, i) {
   if (btn) btn.textContent = open ? 'cue ▾' : 'cue ▴';
 }
 
+
+// ─── GITHUB SYNC ─────────────────────────────────────────────────────
+const GH_OWNER  = 'yoavsarig1-collab';
+const GH_REPO   = 'bigandstrong';
+const GH_PATH   = 'data/backup.json';
+const GH_API    = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`;
+let _ghSyncPending = false;
+
+function getGhToken() { return (state.prefs && state.prefs.ghToken) || ''; }
+
+function saveGhToken() {
+  const val = document.getElementById('gh-token-input').value.trim();
+  if (!val || val.startsWith('•')) { showToast('Paste your GitHub token first'); return; }
+  state.prefs.ghToken = val;
+  persist();
+  document.getElementById('gh-token-input').value = '••••••••••••••••';
+  document.getElementById('gh-token-saved').style.display = 'block';
+  showToast('GitHub token saved ✓');
+}
+
+function utf8ToB64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+function b64ToUtf8(b64) {
+  const binary = atob(b64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+async function pushToGitHub(silent) {
+  const token = getGhToken();
+  if (!token) return;
+  if (_ghSyncPending) return;
+  _ghSyncPending = true;
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    currentWeek: week,
+    prefs: { bw: state.prefs.bw, notes: state.prefs.notes, startDate: state.prefs.startDate },
+    sessions: state.sessions,
+    analyses: state.analyses,
+    weekExercises: state.weekExercises || {},
+    morning: state.morning || {},
+    prs: state.prs || {},
+  };
+
+  try {
+    // Get current file SHA (needed for update)
+    let sha = null;
+    const getRes = await fetch(GH_API, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (getRes.ok) {
+      const file = await getRes.json();
+      sha = file.sha;
+    }
+
+    const body = {
+      message: 'auto-backup ' + new Date().toISOString().slice(0, 10),
+      content: utf8ToB64(JSON.stringify(exportData)),
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(GH_API, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (putRes.ok) {
+      state.prefs._lastGhSync = Date.now();
+      if (!silent) showToast('Synced to GitHub ✓');
+    } else {
+      const err = await putRes.json();
+      if (!silent) showToast('Sync failed: ' + (err.message || putRes.status));
+    }
+  } catch(e) {
+    if (!silent) showToast('Sync error: ' + e.message.slice(0, 40));
+  } finally {
+    _ghSyncPending = false;
+  }
+}
+
+async function autoRestoreFromGitHub() {
+  const token = getGhToken();
+  if (!token) return;
+  // Only auto-restore if localStorage is effectively empty
+  if (Object.keys(state.sessions || {}).length > 5) return;
+
+  try {
+    const res = await fetch(GH_API, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!res.ok) return;
+    const file = await res.json();
+    const data = JSON.parse(b64ToUtf8(file.content));
+    applyRestoredData(data);
+    showToast('Data restored from GitHub ✓');
+  } catch(e) {}
+}
+
+async function manualRestoreFromGitHub() {
+  const token = getGhToken();
+  if (!token) { showToast('Save GitHub token first'); return; }
+  showToast('Fetching backup...');
+  try {
+    const res = await fetch(GH_API, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!res.ok) { showToast('No backup found on GitHub'); return; }
+    const file = await res.json();
+    const data = JSON.parse(b64ToUtf8(file.content));
+    if (!confirm('Restore backup from ' + (data.exportedAt || 'GitHub').slice(0, 10) + '? Current data will be overwritten.')) return;
+    applyRestoredData(data);
+    showToast('Restored ✓ — Week ' + (data.currentWeek || week));
+  } catch(e) {
+    showToast('Restore failed: ' + e.message.slice(0, 40));
+  }
+}
+
+function applyRestoredData(data) {
+  if (data.sessions)      state.sessions      = data.sessions;
+  if (data.analyses)      state.analyses      = data.analyses;
+  if (data.weekExercises) state.weekExercises = data.weekExercises;
+  if (data.morning)       state.morning       = data.morning;
+  if (data.prs)           state.prs           = data.prs;
+  if (data.prefs) {
+    state.prefs.bw        = data.prefs.bw        || state.prefs.bw;
+    state.prefs.notes     = data.prefs.notes     || state.prefs.notes;
+    state.prefs.startDate = data.prefs.startDate || state.prefs.startDate;
+  }
+  if (data.currentWeek) week = data.currentWeek;
+  persist();
+  document.getElementById('wlabel').textContent = 'Week ' + week;
+  renderLog();
+}
+
 // ─── TOAST ──────────────────────────────────────────────────────────
 let _toastTimer = null;
 function showToast(msg) {
@@ -2332,6 +2496,7 @@ dayIdx = getTodayDayIdx();
 updateDateLabel();
 renderLog();
 checkBackupReminder();
+autoRestoreFromGitHub(); // silently restores if localStorage is empty
 </script>
 </body>
 </html>
