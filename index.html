@@ -501,6 +501,18 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .md-li{padding:4px 0 4px 12px;border-left:2px solid var(--border2);margin:3px 0;font-size:13px;color:var(--text);line-height:1.55;}
 .md-strong{color:var(--text);}
 
+
+/* ── SESSION TIMER ── */
+.session-timer-chip{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+.session-timer-chip.running{color:var(--accent);}
+
+/* ── 1RM ── */
+.one-rm-row{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;}
+.one-rm-row span{color:var(--accent2);font-weight:500;}
+
+/* ── SWIPE HINT ── */
+.swipe-hint{text-align:center;font-family:'DM Mono',monospace;font-size:9px;color:var(--border2);letter-spacing:1px;padding:6px 0 2px;user-select:none;}
+
 </style>
 </head>
 <body>
@@ -512,10 +524,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
       <div class="topbar-title">TRAINING LOG</div>
       <div class="topbar-sub" id="log-date"></div>
     </div>
-    <div class="week-ctrl">
-      <button class="wbtn" onclick="chWeek(-1)">‹</button>
-      <div class="wlabel" id="wlabel">Week 1</div>
-      <button class="wbtn" onclick="chWeek(1)">›</button>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+      <div class="week-ctrl">
+        <button class="wbtn" onclick="chWeek(-1)">‹</button>
+        <div class="wlabel" id="wlabel">Week 1</div>
+        <button class="wbtn" onclick="chWeek(1)">›</button>
+      </div>
+      <div class="session-timer-chip" id="session-timer-chip" style="display:none">⏱ <span id="session-timer">0:00</span></div>
     </div>
   </div>
   <div class="day-tabs" id="daytabs"></div>
@@ -1118,7 +1133,11 @@ function renderLogBody() {
   const D = state.days[dayIdx];
   const isGrp = isGroupDay(week, D.key);
 
+  // Auto-start timer when on current week + today
+  if (week === getCurrentWeek() && dayIdx === getTodayDayIdx()) startSessionTimer();
+
   let h = `<div class="day-label">${D.label}</div>`;
+  h += `<div class="swipe-hint">← swipe days →</div>`;
 
   // Group session toggle
   h += `<button class="grp-toggle-btn${isGrp?' active':''}" onclick="toggleGroupDay('${D.key}')">
@@ -1208,6 +1227,7 @@ function renderLogBody() {
         <div class="ex-meta">${escH(ex.s)}${exType!=='weight'?' &nbsp;&middot;&nbsp; <span style="font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:1px">'+(exType==='run'?'RUN':'TIMED')+'</span>':''}</div>
         ${logFields}
         ${prevHint}
+        ${(()=>{const orm=exType==='weight'?getBest1RM(week,D.key,i,ex):null;return orm?`<div class="one-rm-row">~1RM: <span>${orm} kg</span></div>`:''})()}
         ${sw?`<div class="swap-note">↔ Swapped: ${escH(sw)}</div>`:''}
         <textarea class="session-note" rows="1" placeholder="Session notes..."
           onchange="sv(${week},'${D.key}',${i},'n',this.value)"
@@ -1408,9 +1428,11 @@ function svGroup(w, dk, text) { state.sessions['grp_w'+w+'_'+dk+'_text'] = text;
 function toggleGroupDay(dk) { setGroupDay(week, dk, !isGroupDay(week, dk)); renderLog(); }
 
 function saveSession() {
+  const mins = getElapsedMin();
   persist();
-  showToast('Session saved ✓');
-  pushToGitHub(true); // silent background sync
+  showToast(mins > 0 ? `Session saved ✓ — ${mins} min` : 'Session saved ✓');
+  pushToGitHub(true);
+  resetSessionTimer();
 }
 
 // ─── PROGRESS ───────────────────────────────────────────────────────
@@ -2318,6 +2340,78 @@ function applyRestoredData(data) {
   renderLog();
 }
 
+
+// ─── SWIPE DAY NAVIGATION ───────────────────────────────────────────
+let _swipeSX = 0, _swipeSY = 0;
+
+function initSwipe() {
+  const el = document.getElementById('log-body');
+  el.addEventListener('touchstart', e => {
+    _swipeSX = e.touches[0].clientX;
+    _swipeSY = e.touches[0].clientY;
+  }, {passive: true});
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _swipeSX;
+    const dy = e.changedTouches[0].clientY - _swipeSY;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+      if (dx < 0) selDay(Math.min(dayIdx + 1, state.days.length - 1));
+      else         selDay(Math.max(dayIdx - 1, 0));
+    }
+  }, {passive: true});
+}
+
+// ─── SESSION TIMER ───────────────────────────────────────────────────
+let _timerInterval = null;
+let _timerStart    = null;
+
+function startSessionTimer() {
+  if (_timerInterval) return; // already running
+  _timerStart = _timerStart || Date.now();
+  const chip = document.getElementById('session-timer-chip');
+  if (chip) { chip.style.display = 'flex'; chip.classList.add('running'); }
+  _timerInterval = setInterval(_tickTimer, 1000);
+}
+
+function _tickTimer() {
+  const el = document.getElementById('session-timer');
+  if (!el || !_timerStart) return;
+  const sec = Math.floor((Date.now() - _timerStart) / 1000);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  el.textContent = m + ':' + String(s).padStart(2, '0');
+}
+
+function getElapsedMin() {
+  if (!_timerStart) return 0;
+  return Math.round((Date.now() - _timerStart) / 60000);
+}
+
+function resetSessionTimer() {
+  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+  _timerStart = null;
+  const chip = document.getElementById('session-timer-chip');
+  if (chip) { chip.style.display = 'none'; chip.classList.remove('running'); }
+  const el = document.getElementById('session-timer');
+  if (el) el.textContent = '0:00';
+}
+
+// ─── 1RM ESTIMATOR (Epley) ───────────────────────────────────────────
+function calc1RM(weight, reps) {
+  if (!weight || !reps || reps < 1 || reps > 10) return null;
+  return Math.round(parseFloat(weight) * (1 + reps / 30));
+}
+
+function getBest1RM(w, dk, i, ex) {
+  const sc = getSetCount(w, dk, i, ex);
+  let best = null;
+  for (let s = 0; s < sc; s++) {
+    const wt = parseFloat(getSetWeightVal(w, dk, i, s));
+    const reps = parseInt(gv(w, dk, i, 's' + s));
+    const est = calc1RM(wt, reps);
+    if (est && (!best || est > best)) best = est;
+  }
+  return best;
+}
+
 // ─── TOAST ──────────────────────────────────────────────────────────
 let _toastTimer = null;
 function showToast(msg) {
@@ -2497,6 +2591,7 @@ updateDateLabel();
 renderLog();
 checkBackupReminder();
 autoRestoreFromGitHub(); // silently restores if localStorage is empty
+initSwipe();
 </script>
 </body>
 </html>
