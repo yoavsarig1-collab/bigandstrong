@@ -755,6 +755,11 @@ html.theme-light .theme-opt.active { color:#fff; }
       </div>
     </div>
   </div>
+  <div class="backup-banner" id="backup-banner">
+    <span class="backup-banner-text">Back up your data to GitHub?</span>
+    <button class="backup-banner-btn" onclick="copyBackupToClipboard()">Copy backup</button>
+    <button class="backup-banner-dismiss" onclick="document.getElementById('backup-banner').style.display='none'">×</button>
+  </div>
   <div class="day-tabs" id="daytabs"></div>
   <div class="scroll-body" id="log-body"></div>
 </div>
@@ -1495,7 +1500,7 @@ function renderLogBody() {
   h += `<button class="btn-secondary" onclick="getAIAnalysis()">⚡ GET AI ANALYSIS</button>`;
   h += `<button class="btn-secondary" onclick="exportJSON()">EXPORT JSON</button>`;
 
-  if (week>1) h += renderProgress(D);
+  if (week>1) { try { h += renderProgress(D); } catch(e) { console.error('renderProgress error:', e); } }
 
   document.getElementById('log-body').innerHTML = h;
 }
@@ -1712,7 +1717,7 @@ function renderProgress(D) {
   for (let hw = Math.max(1, week-7); hw <= week; hw++) {
     let cells = '';
     state.days.forEach(dObj => {
-      const hasAny = Object.keys(state).some(k => k.startsWith('w'+hw+'_'+dObj.key+'_'));
+      const hasAny = Object.keys(state.sessions||{}).some(k => k.startsWith('w'+hw+'_'+dObj.key+'_'));
       const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9f135';
       const bg = hasAny
         ? (hw === week ? accentHex : accentHex + '55')
