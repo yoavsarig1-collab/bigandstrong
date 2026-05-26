@@ -527,10 +527,10 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .timer-btn.running{border-color:var(--accent);color:var(--accent);}
 .timer-reset-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
 /* ── SWIPE SLIDE ANIMATION ── */
-@keyframes slideFromLeft{from{transform:translateX(32px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes slideFromRight{from{transform:translateX(-32px);opacity:0}to{transform:translateX(0);opacity:1}}
-#log-body.slide-from-left{animation:slideFromLeft 0.28s cubic-bezier(0.16,1,0.3,1);}
-#log-body.slide-from-right{animation:slideFromRight 0.28s cubic-bezier(0.16,1,0.3,1);}
+@keyframes slideFromLeft{from{transform:translateX(44px) scale(0.97);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+@keyframes slideFromRight{from{transform:translateX(-44px) scale(0.97);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+#log-body.slide-from-left{animation:slideFromLeft 0.32s cubic-bezier(0.16,1,0.3,1);transform-origin:center;}
+#log-body.slide-from-right{animation:slideFromRight 0.32s cubic-bezier(0.16,1,0.3,1);transform-origin:center;}
 
 /* ── 1RM ── */
 .one-rm-row{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;}
@@ -538,6 +538,199 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 
 /* ── SWIPE HINT ── */
 .swipe-hint{text-align:center;font-family:'DM Mono',monospace;font-size:9px;color:var(--border2);letter-spacing:1px;padding:6px 0 2px;user-select:none;}
+
+
+/* ──────────────────────────────────────────────────────
+   LIGHT THEME  (cream + navy)
+   Applied automatically via prefers-color-scheme:light,
+   or manually by class on <html>: .theme-light / .theme-dark
+────────────────────────────────────────────────────── */
+
+/* Auto: when system is in light mode */
+@media (prefers-color-scheme: light) {
+  :root:not(.theme-dark) {
+    --bg: #F1EAE0;
+    --surface: #EAE2D8;
+    --card: #E4DCD1;
+    --card2: #DDD4C8;
+    --border: #CBBFAF;
+    --border2: #BDB1A0;
+    --border-line: rgba(0,0,0,0.09);
+    --accent: #1C3E78;
+    --accent2: #BF4E28;
+    --text: #1A1816;
+    --muted: #7A6C5C;
+    --muted2: #8E7E6C;
+    --good: #1C3E78;
+    --danger: #B43030;
+  }
+}
+
+/* Manual force-light (overrides media query and :root) */
+html.theme-light {
+  --bg: #F1EAE0;
+  --surface: #EAE2D8;
+  --card: #E4DCD1;
+  --card2: #DDD4C8;
+  --border: #CBBFAF;
+  --border2: #BDB1A0;
+  --border-line: rgba(0,0,0,0.09);
+  --accent: #1C3E78;
+  --accent2: #BF4E28;
+  --text: #1A1816;
+  --muted: #7A6C5C;
+  --muted2: #8E7E6C;
+  --good: #1C3E78;
+  --danger: #B43030;
+}
+
+/* Manual force-dark (overrides media query) */
+html.theme-dark {
+  --bg: #060606;
+  --surface: #0f0f0f;
+  --card: #161616;
+  --card2: #1c1c1c;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --border-line: rgba(255,255,255,0.08);
+  --accent: #c9f135;
+  --accent2: #ff6b35;
+  --text: #f0f0f0;
+  --muted: #585858;
+  --muted2: #808080;
+  --good: #c9f135;
+  --danger: #ff5c5c;
+}
+
+/* Light-mode element overrides (hardcoded rgba values that need swapping) */
+@media (prefers-color-scheme: light) {
+  html:not(.theme-dark) .badge.up,
+  html.theme-light .badge.up { background: rgba(28,62,120,0.1); }
+  html:not(.theme-dark) .badge.same,
+  html.theme-light .badge.same { background: rgba(0,0,0,0.06); }
+  html:not(.theme-dark) .badge.down,
+  html.theme-light .badge.down { background: rgba(180,48,48,0.1); }
+  html:not(.theme-dark) .vol-delta.up,
+  html.theme-light .vol-delta.up { background: rgba(28,62,120,0.1); }
+  html:not(.theme-dark) .vol-delta.dn,
+  html.theme-light .vol-delta.dn { background: rgba(180,48,48,0.1); }
+  html:not(.theme-dark) .day-label,
+  html.theme-light .day-label {
+    background: rgba(28,62,120,0.08);
+    border-color: rgba(28,62,120,0.22);
+  }
+  html:not(.theme-dark) .morning-streak,
+  html.theme-light .morning-streak {
+    background: rgba(28,62,120,0.08);
+    border-color: rgba(28,62,120,0.22);
+  }
+  html:not(.theme-dark) .pr-badge,
+  html.theme-light .pr-badge {
+    background: rgba(28,62,120,0.12);
+    border-color: rgba(28,62,120,0.3);
+    color: var(--accent);
+  }
+  html:not(.theme-dark) .autofill-btn,
+  html.theme-light .autofill-btn {
+    border-color: rgba(28,62,120,0.25);
+    color: rgba(28,62,120,0.65);
+  }
+  html:not(.theme-dark) .autofill-btn:active,
+  html.theme-light .autofill-btn:active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  html:not(.theme-dark) .ai-block,
+  html.theme-light .ai-block { border-color: rgba(28,62,120,0.2); }
+  html:not(.theme-dark) .dtab.active,
+  html.theme-light .dtab.active { color: #fff; box-shadow: 0 0 10px rgba(28,62,120,0.3); }
+  html:not(.theme-dark) .topbar::after,
+  html.theme-light .topbar::after {
+    background: linear-gradient(to right,rgba(28,62,120,0.55) 0%,rgba(28,62,120,0.18) 38%,transparent 72%);
+  }
+  html:not(.theme-dark) .topbar,
+  html.theme-light .topbar {
+    background: linear-gradient(180deg,rgba(28,62,120,0.04) 0%,transparent 100%);
+  }
+  html:not(.theme-dark) .backup-banner,
+  html.theme-light .backup-banner {
+    background: rgba(28,62,120,0.06);
+    border-color: rgba(28,62,120,0.2);
+  }
+  html:not(.theme-dark) .igroup input::placeholder,
+  html.theme-light .igroup input::placeholder { color: #B8A898; }
+  html:not(.theme-dark) .set-w-inp::placeholder,
+  html.theme-light .set-w-inp::placeholder { color: #B8A898; }
+  html:not(.theme-dark) .set-v-inp::placeholder,
+  html.theme-light .set-v-inp::placeholder { color: #C0B0A0; }
+  html:not(.theme-dark) .session-note::placeholder,
+  html.theme-light .session-note::placeholder { color: #B8A898; }
+  html:not(.theme-dark) .grp-textarea::placeholder,
+  html.theme-light .grp-textarea::placeholder { color: #B8A898; }
+  html:not(.theme-dark) .igroup input:focus,
+  html.theme-light .igroup input:focus {
+    box-shadow: 0 0 0 3px rgba(28,62,120,0.12);
+  }
+  html:not(.theme-dark) .set-v-inp:focus,
+  html.theme-light .set-v-inp:focus {
+    box-shadow: 0 0 0 3px rgba(28,62,120,0.1);
+  }
+  html:not(.theme-dark) .set-w-inp:focus,
+  html.theme-light .set-w-inp:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(191,78,40,0.1);
+  }
+  html:not(.theme-dark) .rest-count,
+  html.theme-light .rest-count { color: var(--accent); }
+  html:not(.theme-dark) .modal-overlay,
+  html.theme-light .modal-overlay { background: rgba(0,0,0,0.4); }
+  html:not(.theme-dark) .alts-overlay,
+  html.theme-light .alts-overlay { background: rgba(0,0,0,0.4); }
+  html:not(.theme-dark) .ex-card,
+  html.theme-light .ex-card {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 8px rgba(0,0,0,0.08);
+  }
+  html:not(.theme-dark) .btn-primary,
+  html.theme-light .btn-primary { color: #fff; }
+}
+
+/* Also apply element overrides when force-light class is present */
+html.theme-light .badge.up { background: rgba(28,62,120,0.1); }
+html.theme-light .badge.same { background: rgba(0,0,0,0.06); }
+html.theme-light .badge.down { background: rgba(180,48,48,0.1); }
+html.theme-light .vol-delta.up { background: rgba(28,62,120,0.1); }
+html.theme-light .vol-delta.dn { background: rgba(180,48,48,0.1); }
+html.theme-light .ex-card {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 8px rgba(0,0,0,0.08);
+}
+html.theme-light .btn-primary { color: #fff; }
+html.theme-light .modal-overlay { background: rgba(0,0,0,0.4); }
+html.theme-light .alts-overlay { background: rgba(0,0,0,0.4); }
+html.theme-light .topbar::after {
+  background: linear-gradient(to right,rgba(28,62,120,0.55) 0%,rgba(28,62,120,0.18) 38%,transparent 72%);
+}
+html.theme-light .topbar {
+  background: linear-gradient(180deg,rgba(28,62,120,0.04) 0%,transparent 100%);
+}
+html.theme-light .dtab.active { color: #fff; box-shadow: 0 0 10px rgba(28,62,120,0.3); }
+html.theme-light .day-label { background: rgba(28,62,120,0.08); border-color: rgba(28,62,120,0.22); }
+html.theme-light .pr-badge { background: rgba(28,62,120,0.12); border-color: rgba(28,62,120,0.3); color: var(--accent); }
+html.theme-light .ai-block { border-color: rgba(28,62,120,0.2); }
+html.theme-light .autofill-btn { border-color: rgba(28,62,120,0.25); color: rgba(28,62,120,0.65); }
+
+/* Theme toggle buttons in settings */
+.theme-toggle-row { display:flex; gap:6px; margin-top:10px; }
+.theme-opt {
+  flex:1; height:36px; border-radius:8px;
+  border:1px solid var(--border-line); background:none;
+  color:var(--muted); font-family:'DM Mono',monospace;
+  font-size:10px; letter-spacing:0.5px; cursor:pointer;
+  text-transform:uppercase; transition:all 0.15s;
+}
+.theme-opt.active {
+  background:var(--accent); color:#000; border-color:var(--accent);
+}
+html.theme-light .theme-opt.active { color:#fff; }
 
 </style>
 </head>
@@ -623,6 +816,18 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <label style="display:block;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Notes / injuries</label>
         <textarea id="pref-notes" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:11px 12px;outline:none;resize:none;min-height:64px" placeholder="Right ankle history, any limitations..."></textarea>
         <button class="btn-secondary" style="margin-top:10px" onclick="savePrefs()">SAVE PREFERENCES</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Appearance</div>
+      <div class="settings-card">
+        <p>Auto follows iOS Dark/Light (Settings → Display → Automatic).</p>
+        <div class="theme-toggle-row">
+          <button class="theme-opt" id="theme-opt-auto"  onclick="setTheme('auto')">Auto</button>
+          <button class="theme-opt" id="theme-opt-dark"  onclick="setTheme('dark')">Dark</button>
+          <button class="theme-opt" id="theme-opt-light" onclick="setTheme('light')">Light</button>
+        </div>
       </div>
     </div>
 
@@ -1510,9 +1715,10 @@ function renderProgress(D) {
     let cells = '';
     DAYS.forEach(dObj => {
       const hasAny = Object.keys(state).some(k => k.startsWith('w'+hw+'_'+dObj.key+'_'));
+      const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9f135';
       const bg = hasAny
-        ? (hw === week ? 'rgba(201,241,53,0.85)' : 'rgba(201,241,53,0.32)')
-        : 'rgba(255,255,255,0.05)';
+        ? (hw === week ? accentHex : accentHex + '55')
+        : 'rgba(128,128,128,0.12)';
       cells += '<div class="hm-cell" style="background:' + bg + '" title="W' + hw + ' ' + dObj.label + '"></div>';
     });
     hmRows.push('<div class="heatmap-row"><span class="heatmap-label">W' + hw + '</span>' + cells + '</div>');
@@ -1531,7 +1737,9 @@ function renderProgress(D) {
       ctx.clearRect(0, 0, W, H);
       const mn = Math.min(...vals), mx = Math.max(...vals);
       const range = mx - mn || 1;
-      const color = (isPR || up) ? '#c9f135' : '#585858';
+      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9f135';
+      const mutedColor  = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()  || '#585858';
+      const color = (isPR || up) ? accentColor : mutedColor;
       ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
@@ -2720,6 +2928,31 @@ function renderMorning() {
     }
   }
 }
+
+// ─── THEME ────────────────────────────────────────────────────────────
+function initTheme() {
+  const saved = state.__theme || 'auto';
+  applyTheme(saved);
+}
+
+function setTheme(mode) {
+  state.__theme = mode;
+  saveState();
+  applyTheme(mode);
+}
+
+function applyTheme(mode) {
+  const h = document.documentElement;
+  h.classList.remove('theme-light','theme-dark');
+  if (mode === 'light') h.classList.add('theme-light');
+  else if (mode === 'dark') h.classList.add('theme-dark');
+  // update toggle buttons
+  ['auto','dark','light'].forEach(m => {
+    const btn = document.getElementById('theme-opt-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+}
+
 
 // ─── INIT ────────────────────────────────────────────────────────────
 loadState();
