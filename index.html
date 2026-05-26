@@ -11,21 +11,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0e0e0e;
-  --surface: #181818;
-  --card: #202020;
-  --card2: #252525;
-  --border: #2c2c2c;
-  --border2: #383838;
+  --bg: #060606;
+  --surface: #0f0f0f;
+  --card: #161616;
+  --card2: #1c1c1c;
+  --border: #222222;
+  --border2: #2e2e2e;
+  --border-line: rgba(255,255,255,0.08);
   --accent: #c9f135;
   --accent2: #ff6b35;
-  --text: #f2f2f2;
-  --muted: #666;
-  --muted2: #888;
+  --text: #f0f0f0;
+  --muted: #585858;
+  --muted2: #808080;
   --good: #c9f135;
   --danger: #ff5c5c;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100%;overflow:hidden;}
@@ -38,9 +40,15 @@ body{display:flex;flex-direction:column;}
 /* ── TOP BAR ── */
 .topbar{
   padding:calc(var(--safe-top) + 14px) 16px 12px;
-  background:var(--bg);border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(201,241,53,0.03) 0%,transparent 100%);
+  border-bottom:1px solid var(--border-line);
   display:flex;align-items:center;justify-content:space-between;
   flex-shrink:0;position:relative;z-index:10;
+}
+.topbar::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(to right,rgba(201,241,53,0.5) 0%,rgba(201,241,53,0.15) 35%,transparent 70%);
+  pointer-events:none;
 }
 .topbar-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--accent);}
 .topbar-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
@@ -52,18 +60,18 @@ body{display:flex;flex-direction:column;}
 /* ── DAY TABS ── */
 .day-tabs{
   display:flex;overflow-x:auto;gap:6px;padding:10px 16px;
-  scrollbar-width:none;border-bottom:1px solid var(--border);
+  scrollbar-width:none;border-bottom:1px solid var(--border-line);
   flex-shrink:0;background:var(--bg);
 }
 .day-tabs::-webkit-scrollbar{display:none;}
 .dtab{
   flex-shrink:0;padding:7px 14px;border-radius:20px;
-  border:1px solid var(--border);background:none;
+  border:1px solid var(--border-line);background:none;
   color:var(--muted);font-family:'DM Mono',monospace;
   font-size:11px;letter-spacing:0.5px;cursor:pointer;
-  text-transform:uppercase;transition:all 0.15s;
+  text-transform:uppercase;transition:all 0.18s var(--ease-out);
 }
-.dtab.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;}
+.dtab.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;box-shadow:0 0 12px rgba(201,241,53,0.35);}
 
 /* ── SCROLLABLE BODY ── */
 .scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(var(--safe-bot) + 16px);}
@@ -78,8 +86,10 @@ body{display:flex;flex-direction:column;}
 
 /* ── EXERCISE CARD ── */
 .ex-card{
-  background:var(--card);border:1px solid var(--border);
+  background:var(--card);border:1px solid var(--border-line);
   border-radius:12px;padding:14px;margin-bottom:10px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.03) inset,0 2px 12px rgba(0,0,0,0.4);
+  transition:border-color 0.15s;
 }
 .ex-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;}
 .ex-name{font-size:14px;font-weight:500;flex:1;line-height:1.3;}
@@ -100,7 +110,7 @@ body{display:flex;flex-direction:column;}
   text-align:center;width:100%;outline:none;padding:0 6px;
   -webkit-appearance:none;
 }
-.igroup input:focus{border-color:var(--accent);}
+.igroup input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,241,53,0.12);}
 .igroup input::placeholder{color:#333;}
 .prev-hint{margin-top:7px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
 .prev-hint b{color:var(--accent2);font-weight:500;}
@@ -125,11 +135,11 @@ body{display:flex;flex-direction:column;}
 .set-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:34px;flex-shrink:0;}
 /* Per-set weight input */
 .set-w-inp{height:40px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--accent2);font-family:'DM Mono',monospace;font-size:13px;text-align:center;flex:1.4;min-width:58px;outline:none;padding:0 4px;-webkit-appearance:none;}
-.set-w-inp:focus{border-color:var(--accent2);}
+.set-w-inp:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(255,107,53,0.1);}
 .set-w-inp::placeholder{color:#2a2a2a;}
 /* Reps / time input */
 .set-v-inp{height:40px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;font-size:16px;text-align:center;flex:1;min-width:46px;outline:none;padding:0 4px;-webkit-appearance:none;}
-.set-v-inp:focus{border-color:var(--accent);}
+.set-v-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,241,53,0.1);}
 .set-v-inp::placeholder{color:#333;}
 .del-set-btn{font-size:18px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;}
 /* ── UNDO ── */
@@ -211,15 +221,16 @@ body{display:flex;flex-direction:column;}
   background:var(--accent);color:#000;border:none;
   font-family:'Bebas Neue',sans-serif;font-size:22px;
   letter-spacing:2px;cursor:pointer;margin-top:6px;
+  transition:transform 0.1s var(--ease-out),opacity 0.1s;
 }
-.btn-primary:active{opacity:0.85;}
+.btn-primary:active{opacity:0.9;transform:scale(0.97);}
 .btn-secondary{
   width:100%;height:44px;border-radius:10px;background:none;
   color:var(--muted2);border:1px solid var(--border2);
   font-family:'DM Mono',monospace;font-size:12px;
   letter-spacing:0.5px;cursor:pointer;margin-top:8px;text-transform:uppercase;
 }
-.btn-secondary:active{background:var(--card);}
+.btn-secondary:active{background:var(--card);transform:scale(0.97);}
 .btn-danger{
   width:100%;height:44px;border-radius:10px;background:none;
   color:var(--danger);border:1px solid rgba(255,92,92,0.3);
@@ -228,10 +239,10 @@ body{display:flex;flex-direction:column;}
 
 /* ── PROGRESS ── */
 .prog-section{margin-top:20px;}
-.prog-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.prog-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:8px;}
+.prog-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border-line);}
+.prog-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-line);gap:8px;}
 .prog-row:last-child{border-bottom:none;}
-.prog-ex{flex:1;font-size:12px;color:var(--muted);}
+.prog-ex{flex:1;font-size:12px;color:var(--muted2);}
 .prog-vals{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:12px;}
 .prog-w1{color:var(--muted);}
 .prog-now{color:var(--text);font-weight:500;}
@@ -239,6 +250,15 @@ body{display:flex;flex-direction:column;}
 .badge.up{background:rgba(201,241,53,0.15);color:var(--good);}
 .badge.same{background:var(--border);color:var(--muted);}
 .badge.down{background:rgba(255,92,92,0.15);color:var(--danger);}
+/* sparkline */
+.spark-canvas{display:block;flex-shrink:0;}
+/* heatmap */
+.heatmap-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-line);}
+.heatmap-title{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.heatmap-grid{display:flex;flex-direction:column;gap:3px;}
+.heatmap-row{display:flex;align-items:center;gap:3px;}
+.heatmap-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);width:22px;text-align:right;flex-shrink:0;}
+.hm-cell{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
 
 /* ── AI ANALYSIS ── */
 .ai-block{
@@ -295,7 +315,7 @@ body{display:flex;flex-direction:column;}
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{
-  display:flex;background:var(--bg);border-top:1px solid var(--border);
+  display:flex;background:var(--bg);border-top:1px solid var(--border-line);
   padding:10px 0 calc(var(--safe-bot) + 10px);flex-shrink:0;
 }
 .nav-btn{
@@ -472,7 +492,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .dtab.active .dtab-dot{background:#000;}
 
 /* ── VOLUME ROW ── */
-.vol-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+.vol-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border-line);border-radius:10px;margin-bottom:10px;}
 .vol-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
 .vol-nums{display:flex;align-items:center;gap:10px;}
 .vol-val{font-family:'DM Mono',monospace;font-size:14px;color:var(--text);font-weight:500;}
@@ -507,10 +527,10 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .timer-btn.running{border-color:var(--accent);color:var(--accent);}
 .timer-reset-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
 /* ── SWIPE SLIDE ANIMATION ── */
-@keyframes slideFromLeft{from{transform:translateX(40px);opacity:0.2}to{transform:translateX(0);opacity:1}}
-@keyframes slideFromRight{from{transform:translateX(-40px);opacity:0.2}to{transform:translateX(0);opacity:1}}
-#log-body.slide-from-left{animation:slideFromLeft 0.22s ease-out;}
-#log-body.slide-from-right{animation:slideFromRight 0.22s ease-out;}
+@keyframes slideFromLeft{from{transform:translateX(32px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideFromRight{from{transform:translateX(-32px);opacity:0}to{transform:translateX(0);opacity:1}}
+#log-body.slide-from-left{animation:slideFromLeft 0.28s cubic-bezier(0.16,1,0.3,1);}
+#log-body.slide-from-right{animation:slideFromRight 0.28s cubic-bezier(0.16,1,0.3,1);}
 
 /* ── 1RM ── */
 .one-rm-row{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;}
@@ -1442,11 +1462,18 @@ function saveSession() {
 }
 
 // ─── PROGRESS ───────────────────────────────────────────────────────
+function getWeekDays() {
+  // returns array of {key, label} for all days in current week template
+  const D0 = DAYS[0] || {};
+  return DAYS.map(d => ({key: d.key, label: d.label}));
+}
+
 function renderProgress(D) {
-  const rows = getWeekExercises(week, D.key).map((ex,i)=>{
+  const exList = getWeekExercises(week, D.key);
+  const sparkData = [];
+  const rows = exList.map((ex,i)=>{
     const type = ex.type || 'weight';
     if (type !== 'weight') return '';
-    // Find earliest week with data as baseline
     let w1 = ex.base;
     for (let bw = 1; bw < week; bw++) {
       const bwMax = getMaxSetWeight(bw, D.key, i, ex);
@@ -1458,21 +1485,80 @@ function renderProgress(D) {
     const up = !isNaN(n1) && !isNaN(nc) ? nc > n1 : wc !== w1;
     const allPrev = getAllTimeMax(D.key, i, ex, week);
     const isPR = !isNaN(nc) && nc > 0 && (allPrev === null || nc > allPrev);
-    return `<div class="prog-row">
-      <div class="prog-ex">${ex.n.split('/')[0].trim()}${isPR?'<span class="pr-badge">PR</span>':''}</div>
-      <div class="prog-vals">
-        <span class="prog-w1">${escH(w1)}</span>
-        <span style="color:var(--muted)">→</span>
-        <span class="prog-now">${escH(wc)}</span>
-        <span class="badge ${isPR?'up':up?'up':'same'}">${isPR?'🏆':up?'↑':'='}</span>
-      </div>
-    </div>`;
+    const sparkPoints = [];
+    for (let sw = Math.max(1, week-7); sw <= week; sw++) {
+      const v = parseFloat(getMaxSetWeight(sw, D.key, i, ex));
+      sparkPoints.push(isNaN(v) ? null : v);
+    }
+    const spkId = 'spk_' + D.key + '_' + i;
+    sparkData.push({id: spkId, pts: sparkPoints, isPR, up});
+    return '<div class="prog-row">' +
+      '<div class="prog-ex">' + ex.n.split('/')[0].trim() + (isPR ? '<span class="pr-badge">PR</span>' : '') + '</div>' +
+      '<canvas class="spark-canvas" id="' + spkId + '" width="56" height="22"></canvas>' +
+      '<div class="prog-vals">' +
+        '<span class="prog-w1">' + escH(w1) + '</span>' +
+        '<span style="color:var(--muted)">→</span>' +
+        '<span class="prog-now">' + escH(wc) + '</span>' +
+        '<span class="badge ' + (isPR ? 'up' : up ? 'up' : 'same') + '">' + (isPR ? '🏆' : up ? '↑' : '=') + '</span>' +
+      '</div>' +
+    '</div>';
   }).filter(Boolean).join('');
   if (!rows) return '';
-  return `<div class="prog-section">
-    <div class="prog-title">PROGRESS</div>${rows}
-  </div>`;
+  // heatmap: last 8 weeks x all days
+  const hmRows = [];
+  for (let hw = Math.max(1, week-7); hw <= week; hw++) {
+    let cells = '';
+    DAYS.forEach(dObj => {
+      const hasAny = Object.keys(state).some(k => k.startsWith('w'+hw+'_'+dObj.key+'_'));
+      const bg = hasAny
+        ? (hw === week ? 'rgba(201,241,53,0.85)' : 'rgba(201,241,53,0.32)')
+        : 'rgba(255,255,255,0.05)';
+      cells += '<div class="hm-cell" style="background:' + bg + '" title="W' + hw + ' ' + dObj.label + '"></div>';
+    });
+    hmRows.push('<div class="heatmap-row"><span class="heatmap-label">W' + hw + '</span>' + cells + '</div>');
+  }
+  const heatmap = hmRows.length > 1
+    ? '<div class="heatmap-section"><div class="heatmap-title">TRAINING FREQUENCY</div><div class="heatmap-grid">' + hmRows.join('') + '</div></div>'
+    : '';
+  setTimeout(() => {
+    sparkData.forEach(({id, pts, isPR, up}) => {
+      const cv = document.getElementById(id);
+      if (!cv) return;
+      const vals = pts.filter(v => v !== null);
+      if (vals.length < 2) return;
+      const ctx = cv.getContext('2d');
+      const W = cv.width, H = cv.height;
+      ctx.clearRect(0, 0, W, H);
+      const mn = Math.min(...vals), mx = Math.max(...vals);
+      const range = mx - mn || 1;
+      const color = (isPR || up) ? '#c9f135' : '#585858';
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      let moved = false;
+      pts.forEach((v, idx) => {
+        if (v === null) { moved = false; return; }
+        const x = (idx / (pts.length - 1)) * (W - 4) + 2;
+        const y = H - 3 - ((v - mn) / range) * (H - 6);
+        if (!moved) { ctx.moveTo(x, y); moved = true; } else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      const lastV = pts[pts.length - 1];
+      if (lastV !== null) {
+        const lx = ((pts.length - 1) / (pts.length - 1)) * (W - 4) + 2;
+        const ly = H - 3 - ((lastV - mn) / range) * (H - 6);
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(lx, ly, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  }, 0);
+  return '<div class="prog-section"><div class="prog-title">PROGRESS</div>' + rows + heatmap + '</div>';
 }
+
 
 // ─── EDIT MODAL ─────────────────────────────────────────────────────
 function openEditModal(dayKey, exIdx) {
