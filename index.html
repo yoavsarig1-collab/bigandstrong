@@ -502,9 +502,15 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .md-strong{color:var(--text);}
 
 
-/* ── SESSION TIMER ── */
-.session-timer-chip{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;gap:4px;justify-content:flex-end;}
-.session-timer-chip.running{color:var(--accent);}
+/* ── SESSION TIMER (manual) ── */
+.timer-btn{font-family:'DM Mono',monospace;font-size:11px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.timer-btn.running{border-color:var(--accent);color:var(--accent);}
+.timer-reset-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
+/* ── SWIPE SLIDE ANIMATION ── */
+@keyframes slideFromLeft{from{transform:translateX(40px);opacity:0.2}to{transform:translateX(0);opacity:1}}
+@keyframes slideFromRight{from{transform:translateX(-40px);opacity:0.2}to{transform:translateX(0);opacity:1}}
+#log-body.slide-from-left{animation:slideFromLeft 0.22s ease-out;}
+#log-body.slide-from-right{animation:slideFromRight 0.22s ease-out;}
 
 /* ── 1RM ── */
 .one-rm-row{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;}
@@ -530,7 +536,10 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
         <div class="wlabel" id="wlabel">Week 1</div>
         <button class="wbtn" onclick="chWeek(1)">›</button>
       </div>
-      <div class="session-timer-chip" id="session-timer-chip" style="display:none">⏱ <span id="session-timer">0:00</span></div>
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:4px">
+        <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶ 0:00</button>
+        <button class="timer-reset-btn" id="timer-reset-btn" onclick="resetTimer()" style="display:none">×</button>
+      </div>
     </div>
   </div>
   <div class="day-tabs" id="daytabs"></div>
@@ -1133,11 +1142,8 @@ function renderLogBody() {
   const D = state.days[dayIdx];
   const isGrp = isGroupDay(week, D.key);
 
-  // Auto-start timer when on current week + today
-  if (week === getCurrentWeek() && dayIdx === getTodayDayIdx()) startSessionTimer();
-
   let h = `<div class="day-label">${D.label}</div>`;
-  h += `<div class="swipe-hint">← swipe days →</div>`;
+  h += `<div class="swipe-hint">← swipe →</div>`;
 
   // Group session toggle
   h += `<button class="grp-toggle-btn${isGrp?' active':''}" onclick="toggleGroupDay('${D.key}')">
@@ -2209,9 +2215,10 @@ function saveGhToken() {
   if (!val || val.startsWith('•')) { showToast('Paste your GitHub token first'); return; }
   state.prefs.ghToken = val;
   persist();
+  history.replaceState(null, '', '#t=' + val);
   document.getElementById('gh-token-input').value = '••••••••••••••••';
   document.getElementById('gh-token-saved').style.display = 'block';
-  showToast('GitHub token saved ✓');
+  showToast('Token saved ✓ — re-add to Home Screen now');
 }
 
 function utf8ToB64(str) {
@@ -2289,8 +2296,9 @@ async function pushToGitHub(silent) {
 async function autoRestoreFromGitHub() {
   const token = getGhToken();
   if (!token) return;
-  // Only auto-restore if localStorage is effectively empty
-  if (Object.keys(state.sessions || {}).length > 5) return;
+  // Only restore if there are no real session data keys
+  const realKeys = Object.keys(state.sessions || {}).filter(k => /^w\d+_/.test(k));
+  if (realKeys.length > 3) return;
 
   try {
     const res = await fetch(GH_API, {
@@ -2344,6 +2352,17 @@ function applyRestoredData(data) {
 // ─── SWIPE DAY NAVIGATION ───────────────────────────────────────────
 let _swipeSX = 0, _swipeSY = 0;
 
+function selDayWithAnim(i, dir) {
+  dayIdx = i;
+  renderTabs();
+  renderLogBody();
+  const body = document.getElementById('log-body');
+  body.classList.remove('slide-from-left', 'slide-from-right');
+  void body.offsetWidth; // force reflow to restart animation
+  body.classList.add(dir === 'left' ? 'slide-from-left' : 'slide-from-right');
+  setTimeout(() => body.classList.remove('slide-from-left', 'slide-from-right'), 300);
+}
+
 function initSwipe() {
   const el = document.getElementById('log-body');
   el.addEventListener('touchstart', e => {
@@ -2354,45 +2373,63 @@ function initSwipe() {
     const dx = e.changedTouches[0].clientX - _swipeSX;
     const dy = e.changedTouches[0].clientY - _swipeSY;
     if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-      if (dx < 0) selDay(Math.min(dayIdx + 1, state.days.length - 1));
-      else         selDay(Math.max(dayIdx - 1, 0));
+      const newIdx = dx < 0
+        ? Math.min(dayIdx + 1, state.days.length - 1)
+        : Math.max(dayIdx - 1, 0);
+      if (newIdx !== dayIdx) selDayWithAnim(newIdx, dx < 0 ? 'left' : 'right');
     }
   }, {passive: true});
 }
 
-// ─── SESSION TIMER ───────────────────────────────────────────────────
+// ─── SESSION TIMER (manual start/stop/reset) ──────────────────────────
 let _timerInterval = null;
 let _timerStart    = null;
+let _timerAccum    = 0; // ms accumulated across pause/resume
 
-function startSessionTimer() {
-  if (_timerInterval) return; // already running
-  _timerStart = _timerStart || Date.now();
-  const chip = document.getElementById('session-timer-chip');
-  if (chip) { chip.style.display = 'flex'; chip.classList.add('running'); }
-  _timerInterval = setInterval(_tickTimer, 1000);
+function toggleTimer() {
+  if (_timerInterval) {
+    // Pause
+    clearInterval(_timerInterval);
+    _timerInterval = null;
+    _timerAccum += Date.now() - _timerStart;
+    _timerStart = null;
+  } else {
+    // Start / Resume
+    _timerStart = Date.now();
+    _timerInterval = setInterval(_tickTimer, 500);
+  }
+  _tickTimer();
+  const rb = document.getElementById('timer-reset-btn');
+  if (rb) rb.style.display = (_timerAccum > 0 || _timerInterval) ? 'inline' : 'none';
 }
 
 function _tickTimer() {
-  const el = document.getElementById('session-timer');
-  if (!el || !_timerStart) return;
-  const sec = Math.floor((Date.now() - _timerStart) / 1000);
+  const btn = document.getElementById('timer-btn');
+  if (!btn) return;
+  const elapsed = _timerAccum + (_timerStart ? Date.now() - _timerStart : 0);
+  const sec = Math.floor(elapsed / 1000);
   const m = Math.floor(sec / 60), s = sec % 60;
-  el.textContent = m + ':' + String(s).padStart(2, '0');
+  const label = m + ':' + String(s).padStart(2, '0');
+  btn.textContent = (_timerInterval ? '⏸ ' : '▶ ') + label;
+  btn.className = 'timer-btn' + (_timerInterval ? ' running' : '');
+}
+
+function resetTimer() {
+  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+  _timerStart = null; _timerAccum = 0;
+  const btn = document.getElementById('timer-btn');
+  if (btn) { btn.textContent = '▶ 0:00'; btn.className = 'timer-btn'; }
+  const rb = document.getElementById('timer-reset-btn');
+  if (rb) rb.style.display = 'none';
 }
 
 function getElapsedMin() {
-  if (!_timerStart) return 0;
-  return Math.round((Date.now() - _timerStart) / 60000);
+  const elapsed = _timerAccum + (_timerStart ? Date.now() - _timerStart : 0);
+  return Math.round(elapsed / 60000);
 }
 
-function resetSessionTimer() {
-  if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
-  _timerStart = null;
-  const chip = document.getElementById('session-timer-chip');
-  if (chip) { chip.style.display = 'none'; chip.classList.remove('running'); }
-  const el = document.getElementById('session-timer');
-  if (el) el.textContent = '0:00';
-}
+// kept for compatibility
+function resetSessionTimer() { resetTimer(); }
 
 // ─── 1RM ESTIMATOR (Epley) ───────────────────────────────────────────
 function calc1RM(weight, reps) {
@@ -2410,6 +2447,22 @@ function getBest1RM(w, dk, i, ex) {
     if (est && (!best || est > best)) best = est;
   }
   return best;
+}
+
+
+// ─── HASH TOKEN (survives localStorage wipe) ────────────────────────
+function initHashToken() {
+  try {
+    const hash = window.location.hash.slice(1);
+    const params = new URLSearchParams(hash);
+    const t = params.get('t');
+    if (t && (t.startsWith('ghp_') || t.startsWith('github_pat_'))) {
+      if (state.prefs.ghToken !== t) {
+        state.prefs.ghToken = t;
+        persist();
+      }
+    }
+  } catch(e) {}
 }
 
 // ─── TOAST ──────────────────────────────────────────────────────────
@@ -2590,7 +2643,8 @@ dayIdx = getTodayDayIdx();
 updateDateLabel();
 renderLog();
 checkBackupReminder();
-autoRestoreFromGitHub(); // silently restores if localStorage is empty
+initHashToken();          // read token from URL hash if present
+autoRestoreFromGitHub();  // silently restores if localStorage is empty
 initSwipe();
 </script>
 </body>
