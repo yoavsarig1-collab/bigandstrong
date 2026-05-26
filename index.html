@@ -1668,9 +1668,7 @@ function saveSession() {
 
 // ─── PROGRESS ───────────────────────────────────────────────────────
 function getWeekDays() {
-  // returns array of {key, label} for all days in current week template
-  const D0 = DAYS[0] || {};
-  return DAYS.map(d => ({key: d.key, label: d.label}));
+  return state.days.map(d => ({key: d.key, label: d.label}));
 }
 
 function renderProgress(D) {
@@ -1713,7 +1711,7 @@ function renderProgress(D) {
   const hmRows = [];
   for (let hw = Math.max(1, week-7); hw <= week; hw++) {
     let cells = '';
-    DAYS.forEach(dObj => {
+    state.days.forEach(dObj => {
       const hasAny = Object.keys(state).some(k => k.startsWith('w'+hw+'_'+dObj.key+'_'));
       const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9f135';
       const bg = hasAny
@@ -2937,7 +2935,7 @@ function initTheme() {
 
 function setTheme(mode) {
   state.__theme = mode;
-  saveState();
+  persist();
   applyTheme(mode);
 }
 
@@ -2956,6 +2954,7 @@ function applyTheme(mode) {
 
 // ─── INIT ────────────────────────────────────────────────────────────
 loadState();
+initTheme();
 week = getCurrentWeek();
 document.getElementById('wlabel').textContent = 'Week '+week;
 dayIdx = getTodayDayIdx();
