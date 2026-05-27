@@ -880,6 +880,56 @@ html.theme-light .save-float { color: #fff; }
   letter-spacing: 0.5px;
 }
 
+
+/* ── PAST-WEEK VIEW ── */
+.past-week-bar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: rgba(255,200,40,0.08);
+  border-bottom: 1px solid rgba(255,200,40,0.18);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,200,40,0.75);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.past-week-bar.show { display: flex; }
+.past-week-now-btn {
+  background: none;
+  border: 1px solid rgba(255,200,40,0.35);
+  color: rgba(255,200,40,0.75);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+/* ── PER-SET PREV HINT ── */
+.prev-hint { margin-top: 7px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+.prev-hint b { color: var(--accent2); font-weight: 500; }
+.prev-sets-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.prev-set-chip {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 3px 7px;
+  letter-spacing: 0.3px;
+}
+.prev-set-chip b { color: var(--accent2); font-weight: 500; }
+
 </style>
 </head>
 <body>
@@ -910,6 +960,7 @@ html.theme-light .save-float { color: #fff; }
     <button class="backup-banner-btn" onclick="copyBackupToClipboard()">Copy backup</button>
     <button class="backup-banner-dismiss" onclick="document.getElementById('backup-banner').style.display='none'">×</button>
   </div>
+  <div class="past-week-bar" id="past-week-bar"><span id="past-week-label">Viewing past week</span><button class="past-week-now-btn" onclick="jumpToNow()">Go to now →</button></div>
   <div class="day-tabs" id="daytabs"></div>
   <div class="scroll-body" id="log-body"></div>
 </div>
@@ -1536,7 +1587,30 @@ function chWeek(d) {
   week = Math.max(1, Math.min(16, week+d));
   document.getElementById('wlabel').textContent = 'W'+week+'/16';
   updateDateLabel();
+  updateWeekBar();
   renderLog();
+}
+function jumpToNow() {
+  week = getCurrentWeek();
+  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  updateDateLabel();
+  updateWeekBar();
+  renderLog();
+}
+function updateWeekBar() {
+  const now = getCurrentWeek();
+  const bar = document.getElementById('past-week-bar');
+  const lbl = document.getElementById('past-week-label');
+  if (!bar) return;
+  if (week < now) {
+    if (lbl) lbl.textContent = 'Viewing week ' + week + ' — read only view';
+    bar.classList.add('show');
+  } else if (week > now) {
+    if (lbl) lbl.textContent = 'Viewing week ' + week + ' (ahead)';
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
 }
 
 function selDay(i) { dayIdx=i; renderTabs(); renderLogBody(); }
@@ -1750,11 +1824,15 @@ function renderSetRows(w, dk, i, ex) {
     const rv = gv(w, dk, i, 's'+s) || '';
     if (type === 'weight') {
       const wv = getSetWeightVal(w, dk, i, s);
-      // Placeholder: previous set's logged weight if available, otherwise blank
+      // Placeholder: same-week previous set weight, fallback to last week same set
       let wph = '';
       for (let p = s - 1; p >= 0; p--) {
         const prev = getSetWeightVal(w, dk, i, p);
         if (prev) { wph = prev; break; }
+      }
+      if (!wph && w > 1) {
+        const lw = getSetWeightVal(w-1, dk, i, s);
+        if (lw) wph = lw;
       }
       const complete = !!(wv && rv);
       html += `<div class="set-row${complete?' complete':''}">
@@ -1815,22 +1893,19 @@ function getPrevSetsHint(w, dk, i, ex) {
     return `<div class="prev-hint">Last week: ${parts.join(' &nbsp;·&nbsp; ')}</div>`;
   }
   if (type === 'weight') {
-    // Scan up to 8 slots — don't rely on sc key which may not be set for old data
-    const weights = [], reps = [];
+    const chips = [];
     for (let s = 0; s < 8; s++) {
       const pw = getSetWeightVal(w-1, dk, i, s);
       const pr = gv(w-1, dk, i, 's'+s);
       if (!pw && !pr) { if (s >= 1) break; else continue; }
-      if (pw) weights.push(pw);
-      if (pr) reps.push(pr);
+      let chip = `S${s+1}: `;
+      if (pw && pr) chip += `<b>${escH(pw)}</b>×${escH(pr)}`;
+      else if (pw) chip += `<b>${escH(pw)}</b> kg`;
+      else chip += `${escH(pr)} reps`;
+      chips.push(`<span class="prev-set-chip">${chip}</span>`);
     }
-    if (weights.length === 0 && reps.length === 0) return '';
-    let maxW = weights.reduce((mx, wt) => {
-      return (parseFloat(wt) > parseFloat(mx)) ? wt : mx;
-    }, weights[0] || '');
-    let hint = maxW ? `<b>${escH(maxW)}</b>` : '';
-    if (reps.length) hint += (hint ? ' &nbsp;·&nbsp; ' : '') + reps.join(', ') + ' reps';
-    return `<div class="prev-hint">Last week: ${hint}</div>`;
+    if (!chips.length) return '';
+    return `<div class="prev-sets-row">` + chips.join('') + `</div>`;
   }
   // timed — scan up to 8 slots
   const sets = [];
@@ -2411,6 +2486,7 @@ function savePrefs() {
   persist();
   week = getCurrentWeek();
   document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  updateWeekBar();
   renderLog();
   showToast('Preferences saved ✓');
 }
@@ -2492,8 +2568,9 @@ function importJSON() {
   if (parsed.analyses) state.analyses = parsed.analyses;
   if (parsed.currentWeek) week = parsed.currentWeek;
   persist();
+  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  updateWeekBar();
   renderLog();
-  document.getElementById('wlabel').textContent = 'Week ' + week;
   document.getElementById('import-area').style.display = 'none';
   showToast('Data restored ✓');
 }
@@ -2894,7 +2971,8 @@ function applyRestoredData(data) {
   }
   if (data.currentWeek) week = data.currentWeek;
   persist();
-  document.getElementById('wlabel').textContent = 'Week ' + week;
+  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  updateWeekBar();
   renderLog();
 }
 
@@ -3315,6 +3393,7 @@ week = getCurrentWeek();
 document.getElementById('wlabel').textContent = 'W'+week+'/16';
 dayIdx = getTodayDayIdx();
 updateDateLabel();
+updateWeekBar();
 renderLog();
 checkBackupReminder();
 initHashToken();          // read token from URL hash if present
