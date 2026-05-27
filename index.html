@@ -2819,9 +2819,9 @@ async function pushToGitHub(silent) {
 async function autoRestoreFromGitHub() {
   const token = getGhToken();
   if (!token) return;
-  // Only restore if there are no real session data keys
-  const realKeys = Object.keys(state.sessions || {}).filter(k => /^w\d+_/.test(k));
-  if (realKeys.length > 3) return;
+  // Only restore if there are no real session data keys (regular or group)
+  const hasData = Object.keys(state.sessions || {}).some(k => /^(w\d+_|grp_w)/.test(k));
+  if (hasData) return;
 
   try {
     const res = await fetch(GH_API, {
