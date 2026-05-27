@@ -472,7 +472,16 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .rest-overlay.open{display:flex;}
 .rest-box{background:var(--surface);border-radius:20px;padding:32px 28px;text-align:center;min-width:270px;border:1px solid var(--border2);}
 .rest-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
-.rest-count{font-family:'Bebas Neue',sans-serif;font-size:80px;color:var(--accent);line-height:1;letter-spacing:2px;}
+.rest-ring-wrap{position:relative;width:176px;height:176px;margin:4px auto 10px;flex-shrink:0;}
+.rest-ring-svg{width:176px;height:176px;transform:rotate(-90deg);}
+.rest-ring-track{fill:none;stroke:var(--border2);stroke-width:7;}
+.rest-ring-fill{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-dasharray:314.16;stroke-dashoffset:0;transition:stroke-dashoffset 0.95s linear,stroke 0.3s;}
+.rest-ring-fill.urgent{stroke:var(--danger);}
+.rest-count{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:58px;color:var(--accent);
+  line-height:1;letter-spacing:2px;white-space:nowrap;
+}
 .rest-count.urgent{color:var(--danger);}
 .rest-presets{display:flex;gap:8px;margin:16px 0 8px;}
 .rest-preset{flex:1;height:40px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--muted2);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all 0.15s;}
@@ -1070,7 +1079,13 @@ html.theme-light .save-float { color: #fff; }
 <div class="rest-overlay" id="rest-overlay" onclick="if(event.target===this)stopRest()">
   <div class="rest-box">
     <div class="rest-label">Rest Timer</div>
-    <div class="rest-count" id="rest-count">1:30</div>
+    <div class="rest-ring-wrap">
+      <svg class="rest-ring-svg" viewBox="0 0 120 120">
+        <circle class="rest-ring-track" cx="60" cy="60" r="50"/>
+        <circle class="rest-ring-fill" id="rest-ring-fill" cx="60" cy="60" r="50"/>
+      </svg>
+      <div class="rest-count" id="rest-count">1:30</div>
+    </div>
     <div class="rest-presets">
       <button class="rest-preset" onclick="startRest(60)">1:00</button>
       <button class="rest-preset rp-active" onclick="startRest(90)">1:30</button>
@@ -2444,6 +2459,15 @@ let _restDefault = 90;
 function startRest(secs) {
   _restDefault = secs;
   _restSecs = secs;
+  // Reset ring instantly (no transition), then let ticks animate
+  const ring = document.getElementById('rest-ring-fill');
+  if (ring) {
+    ring.style.transition = 'none';
+    ring.style.strokeDashoffset = '0';
+    ring.classList.remove('urgent');
+    void ring.getBoundingClientRect(); // force reflow
+    ring.style.transition = '';
+  }
   // Update active preset button
   document.querySelectorAll('.rest-preset').forEach(b => b.classList.remove('rp-active'));
   const presets = [60, 90, 120, 180];
@@ -2470,10 +2494,16 @@ function updateRestDisplay() {
   const m = Math.floor(_restSecs / 60);
   const s = _restSecs % 60;
   const el = document.getElementById('rest-count');
+  const ring = document.getElementById('rest-ring-fill');
+  const urgent = _restSecs <= 10;
   if (el) {
     el.textContent = m + ':' + String(s).padStart(2, '0');
-    if (_restSecs <= 10) el.classList.add('urgent');
-    else el.classList.remove('urgent');
+    el.classList.toggle('urgent', urgent);
+  }
+  if (ring) {
+    const progress = _restDefault > 0 ? _restSecs / _restDefault : 0;
+    ring.style.strokeDashoffset = (314.16 * (1 - progress)).toFixed(2);
+    ring.classList.toggle('urgent', urgent);
   }
 }
 
