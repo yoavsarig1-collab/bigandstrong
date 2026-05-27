@@ -780,6 +780,76 @@ html.theme-light .theme-opt.active { color:#fff; }
 }
 html.theme-light .save-float { color: #fff; }
 
+
+/* ── GROUP EXERCISE LOG ── */
+.grp-ex-item {
+  background: var(--surface);
+  border: 1px solid var(--border-line);
+  border-radius: 10px;
+  padding: 10px 10px 8px;
+  margin-bottom: 8px;
+}
+.grp-ex-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.grp-ex-name-inp {
+  flex: 1;
+  height: 36px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  padding: 0 2px;
+}
+.grp-ex-name-inp::placeholder { color: var(--muted); font-weight: 400; }
+.grp-ex-name-inp:focus { border-bottom-color: var(--accent2); }
+.grp-ex-del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.grp-sets-list { display: flex; flex-direction: column; gap: 4px; }
+.grp-add-ex-btn {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: 1px dashed var(--border2);
+  color: var(--muted);
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.5px;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.grp-add-ex-btn:active { border-color: var(--accent2); color: var(--accent2); }
+.grp-exs-empty {
+  text-align: center;
+  padding: 12px 0 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
 </style>
 </head>
 <body>
@@ -1437,12 +1507,14 @@ function renderLogBody() {
     // ── GROUP SESSION VIEW ──
     const grpText = gvGroup(week, D.key);
     h += `<div class="grp-block">
-      <div class="grp-label">Group / Coached session — what was done?</div>
+      <div class="grp-label">Group / Coached session</div>
       <button class="grp-scan-btn" id="grp-scan-btn-${D.key}" onclick="triggerPhotoScan('${D.key}')">
         <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Scan workout photo</span>
       </button>
       <img class="grp-scan-preview" id="grp-scan-preview-${D.key}" src="" alt="Workout photo">
-      <textarea class="grp-textarea" id="grp-textarea-${D.key}" rows="4" placeholder="e.g. Full body class — squats, push-ups, kettlebell swings, sled push, finisher..."
+      <div class="grp-exs" id="grp-exs-${D.key}">${renderGrpExs(week, D.key)}</div>
+      <button class="grp-add-ex-btn" onclick="addGrpEx('${D.key}')">+ Add exercise</button>
+      <textarea class="grp-textarea" id="grp-textarea-${D.key}" rows="1" placeholder="Session notes (optional)"
         onchange="svGroup(${week},'${D.key}',this.value)"
         oninput="autoResize(this)">${escH(grpText)}</textarea>
     </div>`;
@@ -1973,7 +2045,7 @@ function handlePhotoSelected(input) {
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-                { type: 'text', text: 'This is a screenshot or photo of a workout. It may be from Strava, Garmin, Nike Run Club, a gym whiteboard, a fitness app, or a photo of people exercising. Extract all useful workout info: activity type (run/swim/cycle/strength), distance, duration, pace, heart rate, calories, exercises, sets, reps, rounds, or anything relevant. Format as a short plain-text summary a training log would use. 60 words max. No markdown, no bullet points, just a natural sentence or two.' }
+                { type: 'text', text: 'This is a photo of a workout. If it shows strength/resistance exercises with identifiable sets and reps (gym whiteboard, app screenshot, CrossFit board), respond ONLY with a JSON array: [{"name":"Exercise Name","sets":[{"w":"weight_in_kg_or_empty","r":"rep_count"}]}]. If it is cardio (run/swim/cycle/HIIT) or a class without clear per-set data, respond ONLY with a plain-text summary (50 words max, no JSON). Reply with one format only, nothing else.' }
               ]
             }]
           })
@@ -1984,11 +2056,24 @@ function handlePhotoSelected(input) {
           throw new Error('API ' + response.status + ': ' + errBody.slice(0,80));
         }
         const data = await response.json();
-        const text = data.content[0].text.trim();
-
-        if (textarea) { textarea.value = text; autoResize(textarea); }
-        svGroup(week, dayKey, text);
-        showToast('Workout scanned ✓');
+        const raw = data.content[0].text.trim();
+        let parsed = null;
+        const jStart = raw.indexOf('[');
+        if (jStart !== -1) { try { parsed = JSON.parse(raw.slice(jStart)); } catch(e) {} }
+        if (parsed && Array.isArray(parsed) && parsed.length) {
+          const exs = parsed.map(ex => ({
+            name: String(ex.name || ''),
+            sets: Array.isArray(ex.sets) ? ex.sets.map(s => ({w:String(s.w||''),r:String(s.r||'')})) : [{w:'',r:''}]
+          }));
+          svGrpExs(week, dayKey, exs);
+          const exsEl = document.getElementById('grp-exs-' + dayKey);
+          if (exsEl) exsEl.innerHTML = renderGrpExs(week, dayKey);
+          showToast('Exercises parsed ✓');
+        } else {
+          if (textarea) { textarea.value = raw; autoResize(textarea); }
+          svGroup(week, dayKey, raw);
+          showToast('Workout scanned ✓');
+        }
 
       } catch(err) {
         console.error('Scan error:', err);
@@ -2486,7 +2571,7 @@ function autoFillFromLastWeek(dayKey) {
 
 // ─── DAY COMPLETION CHECK ────────────────────────────────────────────
 function dayHasData(w, dk) {
-  if (isGroupDay(w, dk) && gvGroup(w, dk)) return true;
+  if (isGroupDay(w, dk) && (gvGroup(w, dk) || gvGrpExs(w, dk).length)) return true;
   const exs = getWeekExercises(w, dk);
   for (let i = 0; i < exs.length; i++) {
     const ex = exs[i];
@@ -3026,6 +3111,84 @@ function setupSaveFloat() {
   body._sfL = check;
   body.addEventListener('scroll', check, {passive: true});
   check();
+}
+
+
+// ─── GROUP EXERCISE LOG ─────────────────────────────────────────────────
+function gvGrpExs(w, dk) {
+  try { return JSON.parse(state.sessions['grp_w'+w+'_'+dk+'_exs'] || '[]'); }
+  catch(e) { return []; }
+}
+function svGrpExs(w, dk, exs) {
+  state.sessions['grp_w'+w+'_'+dk+'_exs'] = JSON.stringify(exs);
+  persist();
+}
+function renderGrpExs(w, dk) {
+  const exs = gvGrpExs(w, dk);
+  if (!exs.length) {
+    return '<div class="grp-exs-empty">No exercises yet — add one or scan a photo</div>';
+  }
+  return exs.map(function(ex, ei) {
+    const setRows = ex.sets.map(function(s, si) {
+      return `<div class="set-row${s.w && s.r ? ' complete' : ''}">` +
+        `<span class="set-num">S${si+1}</span>` +
+        `<input class="set-w-inp" type="number" inputmode="decimal" placeholder="kg" value="${escH(s.w)}" onchange="svGrpSet('${dk}',${ei},${si},'w',this.value)">` +
+        `<input class="set-v-inp" type="number" inputmode="decimal" placeholder="reps" value="${escH(s.r)}" onchange="svGrpSet('${dk}',${ei},${si},'r',this.value)">` +
+        `<button class="del-set-btn" onclick="delGrpSet('${dk}',${ei},${si})">&#215;</button>` +
+        `</div>`;
+    }).join('');
+    return `<div class="grp-ex-item">` +
+      `<div class="grp-ex-header">` +
+      `<input class="grp-ex-name-inp" type="text" placeholder="Exercise name" value="${escH(ex.name)}" onchange="svGrpExName('${dk}',${ei},this.value)">` +
+      `<button class="grp-ex-del-btn" onclick="delGrpEx('${dk}',${ei})">&#215;</button>` +
+      `</div>` +
+      `<div class="grp-sets-list">${setRows}</div>` +
+      `<button class="add-set-btn" style="margin-top:6px" onclick="addGrpSet('${dk}',${ei})">+ Set</button>` +
+      `</div>`;
+  }).join('');
+}
+function addGrpEx(dk) {
+  const exs = gvGrpExs(week, dk);
+  exs.push({name: '', sets: [{w:'', r:''}]});
+  svGrpExs(week, dk, exs);
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) el.innerHTML = renderGrpExs(week, dk);
+}
+function delGrpEx(dk, ei) {
+  const exs = gvGrpExs(week, dk);
+  exs.splice(ei, 1);
+  svGrpExs(week, dk, exs);
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) el.innerHTML = renderGrpExs(week, dk);
+}
+function addGrpSet(dk, ei) {
+  const exs = gvGrpExs(week, dk);
+  if (!exs[ei]) return;
+  exs[ei].sets.push({w:'', r:''});
+  svGrpExs(week, dk, exs);
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) el.innerHTML = renderGrpExs(week, dk);
+}
+function delGrpSet(dk, ei, si) {
+  const exs = gvGrpExs(week, dk);
+  if (!exs[ei]) return;
+  exs[ei].sets.splice(si, 1);
+  if (!exs[ei].sets.length) exs[ei].sets.push({w:'', r:''});
+  svGrpExs(week, dk, exs);
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) el.innerHTML = renderGrpExs(week, dk);
+}
+function svGrpExName(dk, ei, val) {
+  const exs = gvGrpExs(week, dk);
+  if (!exs[ei]) return;
+  exs[ei].name = val;
+  svGrpExs(week, dk, exs);
+}
+function svGrpSet(dk, ei, si, field, val) {
+  const exs = gvGrpExs(week, dk);
+  if (!exs[ei] || !exs[ei].sets[si]) return;
+  exs[ei].sets[si][field] = val;
+  svGrpExs(week, dk, exs);
 }
 
 
