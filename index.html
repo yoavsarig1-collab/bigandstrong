@@ -751,6 +751,35 @@ html.theme-light .theme-opt.active { color:#fff; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── TOPBAR SAVE PILL ── */
+.save-float {
+  align-self: flex-end;
+  height: 28px;
+  padding: 0 13px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-transform: uppercase;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.2s ease, opacity 0.18s;
+  pointer-events: none;
+}
+.save-float.sf-on {
+  max-height: 28px;
+  opacity: 1;
+  pointer-events: all;
+}
+html.theme-light .save-float { color: #fff; }
+
 </style>
 </head>
 <body>
@@ -772,6 +801,7 @@ html.theme-light .theme-opt.active { color:#fff; }
         <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶ 0:00</button>
         <button class="timer-reset-btn" id="timer-reset-btn" onclick="resetTimer()" style="display:none">×</button>
       </div>
+      <button id="save-float" class="save-float" onclick="saveSession()">SAVE</button>
     </div>
   </div>
   <div class="backup-banner" id="backup-banner">
@@ -1357,6 +1387,9 @@ function showScreen(name) {
   if (name==='settings') loadSettingsUI();
   if (name==='analysis') renderAnalysis();
   if (name==='morning') renderMorning();
+  const sf = document.getElementById('save-float');
+  if (sf && name !== 'log') sf.classList.remove('sf-on');
+  if (sf && name === 'log') setupSaveFloat();
 }
 
 // ─── DATE LABEL ─────────────────────────────────────────────────────
@@ -1386,7 +1419,7 @@ function renderTabs() {
 }
 
 // ─── LOG BODY ───────────────────────────────────────────────────────
-function renderLog() { renderTabs(); renderLogBody(); }
+function renderLog() { renderTabs(); renderLogBody(); setupSaveFloat(); }
 
 function renderLogBody() {
   const D = state.days[dayIdx];
@@ -2974,6 +3007,25 @@ function applyTheme(mode) {
     const btn = document.getElementById('theme-opt-' + m);
     if (btn) btn.classList.toggle('active', m === mode);
   });
+}
+
+
+function setupSaveFloat() {
+  const sf = document.getElementById('save-float');
+  if (!sf) return;
+  const body = document.getElementById('log-body');
+  if (!body) return;
+  const hasSticky = !!body.querySelector('.save-sticky');
+  if (!hasSticky) { sf.classList.remove('sf-on'); return; }
+  // scroll listener: hide pill when sticky is in view (near bottom)
+  if (body._sfL) body.removeEventListener('scroll', body._sfL);
+  function check() {
+    const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
+    sf.classList.toggle('sf-on', !nearBottom);
+  }
+  body._sfL = check;
+  body.addEventListener('scroll', check, {passive: true});
+  check();
 }
 
 
