@@ -535,6 +535,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 
 /* ── SESSION TIMER (manual) ── */
 .timer-btn{font-family:'DM Mono',monospace;font-size:11px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.rest-toggle-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.5px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 9px;white-space:nowrap;opacity:0.45;transition:opacity 0.15s,border-color 0.15s,color 0.15s;}
+.rest-toggle-btn.on{opacity:1;border-color:var(--accent);color:var(--accent);}
 .timer-btn.running{border-color:var(--accent);color:var(--accent);}
 .timer-reset-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
 /* ── SWIPE SLIDE ANIMATION ── */
@@ -877,6 +879,7 @@ html.theme-light .save-float { color: #fff; }
         <button class="wbtn" onclick="chWeek(1)">›</button>
       </div>
       <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:4px">
+        <button class="rest-toggle-btn" id="rest-toggle-btn" onclick="toggleRestTimer()">REST</button>
         <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶ 0:00</button>
         <button class="timer-reset-btn" id="timer-reset-btn" onclick="resetTimer()" style="display:none">×</button>
       </div>
@@ -2456,7 +2459,20 @@ let _restInterval = null;
 let _restSecs = 90;
 let _restDefault = 90;
 
+function toggleRestTimer() {
+  state.prefs.restTimerEnabled = state.prefs.restTimerEnabled === false ? true : false;
+  persist();
+  updateRestToggleBtn();
+}
+function updateRestToggleBtn() {
+  const btn = document.getElementById('rest-toggle-btn');
+  if (!btn) return;
+  const on = state.prefs.restTimerEnabled !== false;
+  btn.classList.toggle('on', on);
+}
+
 function startRest(secs) {
+  if (state.prefs.restTimerEnabled === false) return;
   _restDefault = secs;
   _restSecs = secs;
   // Reset ring instantly (no transition), then let ticks animate
@@ -3225,6 +3241,7 @@ function svGrpSet(dk, ei, si, field, val) {
 // ─── INIT ────────────────────────────────────────────────────────────
 loadState();
 initTheme();
+updateRestToggleBtn();
 week = getCurrentWeek();
 document.getElementById('wlabel').textContent = 'W'+week+'/16';
 dayIdx = getTodayDayIdx();
