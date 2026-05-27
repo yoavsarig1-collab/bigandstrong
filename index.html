@@ -957,6 +957,8 @@ html.theme-light .save-float { color: #fff; }
         <button class="btn-primary" style="margin-top:0;height:44px;font-size:18px" onclick="saveGhToken()">SAVE TOKEN</button>
         <div class="key-saved" id="gh-token-saved">✓ Sync enabled</div>
         <button class="btn-secondary" style="margin-top:8px" onclick="manualRestoreFromGitHub()">↓ RESTORE FROM GITHUB</button>
+        <button class="btn-secondary" id="hs-url-btn" style="margin-top:8px;display:none" onclick="copyHomeScreenUrl()">📱 COPY HOME SCREEN URL</button>
+        <p id="hs-url-hint" style="display:none;font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5">Open the copied URL in Safari → Share → Add to Home Screen. This embeds your token so the app restores your data automatically.</p>
       </div>
     </div>
 
@@ -2385,6 +2387,7 @@ function loadSettingsUI() {
     gti.value = '••••••••••••••••';
     gts.style.display = 'block';
   }
+  updateHsUrlBtn();
   document.getElementById('pref-bw').value = state.prefs.bw || '';
   document.getElementById('pref-notes').value = state.prefs.notes || '';
   document.getElementById('pref-startdate').value = state.prefs.startDate || '';
@@ -2741,7 +2744,31 @@ function saveGhToken() {
   history.replaceState(null, '', '#t=' + val);
   document.getElementById('gh-token-input').value = '••••••••••••••••';
   document.getElementById('gh-token-saved').style.display = 'block';
-  showToast('Token saved ✓ — re-add to Home Screen now');
+  updateHsUrlBtn();
+  showToast('Token saved ✓');
+}
+function updateHsUrlBtn() {
+  const has = !!getGhToken();
+  const btn = document.getElementById('hs-url-btn');
+  const hint = document.getElementById('hs-url-hint');
+  if (btn) btn.style.display = has ? '' : 'none';
+  if (hint) hint.style.display = has ? '' : 'none';
+}
+function copyHomeScreenUrl() {
+  const token = getGhToken();
+  if (!token) { showToast('Save your GitHub token first'); return; }
+  const url = location.origin + location.pathname + '#t=' + token;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => showToast('URL copied — open in Safari, then Add to Home Screen'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('URL copied — open in Safari, then Add to Home Screen');
+  }
 }
 
 function utf8ToB64(str) {
