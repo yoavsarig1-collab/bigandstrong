@@ -3503,73 +3503,57 @@ function renderGrpExs(w, dk) {
     const type = ex.type || 'weight';
     const prevHint = getGrpPrevHint(w, dk, ex.name);
 
-    // type selector
-    const typeSel =
-      '<div class="grp-type-sel">' +
+    const typeSel = `<div class="grp-type-sel">` +
       ['weight','timed','cardio'].map(function(t) {
         const labels = {weight:'Wt', timed:'⏱', cardio:'Cardio'};
-        return '<button class="gts-btn'+(type===t?' active':'')+'" onclick="setGrpExType(''+dk+'','+ei+',''+t+'')">'+labels[t]+'</button>';
-      }).join('') +
-      '</div>';
+        const active = type===t ? ' active' : '';
+        return `<button class="gts-btn${active}" onclick="setGrpExType('${dk}',${ei},'${t}')">${labels[t]}</button>`;
+      }).join('') + `</div>`;
 
-    // set rows
     let setSection = '';
     if (type === 'weight') {
       const rows = ex.sets.map(function(s, si) {
         const complete = !!(s.w && s.r);
-        return '<div class="set-row'+(complete?' complete':'')+'">'+
-          '<span class="set-num" style="cursor:pointer" onclick="startRest(_restDefault)">Set '+(si+1)+'</span>'+
-          '<input class="set-w-inp" type="text" inputmode="decimal" placeholder="kg" value="'+escH(s.w)+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','w',this.value)">'+
-          '<input class="set-v-inp" type="number" inputmode="numeric" placeholder="reps" value="'+escH(s.r)+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','r',this.value)" onblur="if(this.value)startRest(_restDefault)">'+
-          (ex.sets.length > 1 ? '<button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button>' : '')+
-          '</div>';
+        const del = ex.sets.length > 1 ? `<button class="del-set-btn" onclick="delGrpSet('${dk}',${ei},${si})">&#8722;</button>` : '';
+        return `<div class="set-row${complete?' complete':''}">` +
+          `<span class="set-num" style="cursor:pointer" onclick="startRest(_restDefault)">Set ${si+1}</span>` +
+          `<input class="set-w-inp" type="text" inputmode="decimal" placeholder="kg" value="${escH(s.w)}" onchange="svGrpSet('${dk}',${ei},${si},'w',this.value)">` +
+          `<input class="set-v-inp" type="number" inputmode="numeric" placeholder="reps" value="${escH(s.r)}" onchange="svGrpSet('${dk}',${ei},${si},'r',this.value)" onblur="if(this.value)startRest(_restDefault)">` +
+          del + `</div>`;
       }).join('');
-      setSection =
-        '<div class="sets-section">'+
-        '<div class="sets-header"><div class="ilabel">Sets · Weight · Reps</div>'+
-        '<button class="add-set-btn" onclick="addGrpSet(''+dk+'','+ei+')">+ Set</button></div>'+
-        '<div class="sets-list">'+rows+'</div></div>';
+      setSection = `<div class="sets-section"><div class="sets-header"><div class="ilabel">Sets · Weight · Reps</div>` +
+        `<button class="add-set-btn" onclick="addGrpSet('${dk}',${ei})">+ Set</button></div>` +
+        `<div class="sets-list">${rows}</div></div>`;
     } else if (type === 'timed') {
       const rows = ex.sets.map(function(s, si) {
-        return '<div class="set-row">'+
-          '<span class="set-num">Set '+(si+1)+'</span>'+
-          '<input class="set-v-inp" type="text" inputmode="text" placeholder="time" value="'+escH(s.t||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','t',this.value)">'+
-          (ex.sets.length > 1 ? '<button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button>' : '')+
-          '</div>';
+        const del = ex.sets.length > 1 ? `<button class="del-set-btn" onclick="delGrpSet('${dk}',${ei},${si})">&#8722;</button>` : '';
+        return `<div class="set-row"><span class="set-num">Set ${si+1}</span>` +
+          `<input class="set-v-inp" type="text" inputmode="text" placeholder="time" value="${escH(s.t||'')}" onchange="svGrpSet('${dk}',${ei},${si},'t',this.value)">` +
+          del + `</div>`;
       }).join('');
-      setSection =
-        '<div class="sets-section">'+
-        '<div class="sets-header"><div class="ilabel">Sets · Time</div>'+
-        '<button class="add-set-btn" onclick="addGrpSet(''+dk+'','+ei+')">+ Set</button></div>'+
-        '<div class="sets-list">'+rows+'</div></div>';
+      setSection = `<div class="sets-section"><div class="sets-header"><div class="ilabel">Sets · Time</div>` +
+        `<button class="add-set-btn" onclick="addGrpSet('${dk}',${ei})">+ Set</button></div>` +
+        `<div class="sets-list">${rows}</div></div>`;
     } else if (type === 'cardio') {
       const rounds = ex.sets.map(function(s, si) {
-        const label = ex.sets.length > 1 ? '<div class="grp-round-label">Round '+(si+1)+'</div>' : '';
-        return label +
-          '<div class="grp-cardio-fields">'+
-          '<div class="igroup"><div class="ilabel">Min</div>'+
-          '<input type="number" inputmode="decimal" placeholder="—" value="'+escH(s.dur||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','dur',this.value)"></div>'+
-          '<div class="igroup"><div class="ilabel">Cal / m</div>'+
-          '<input type="number" inputmode="decimal" placeholder="—" value="'+escH(s.cal||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','cal',this.value)"></div>'+
-          '<div class="igroup" style="max-width:72px"><div class="ilabel">RPE</div>'+
-          '<input type="number" inputmode="decimal" placeholder="—" min="1" max="10" step="0.5" value="'+escH(s.rpe||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','rpe',this.value)"></div>'+
-          (ex.sets.length > 1 ? '<div style="display:flex;align-items:flex-end;padding-bottom:1px"><button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button></div>' : '')+
-          '</div>';
+        const lbl = ex.sets.length > 1 ? `<div class="grp-round-label">Round ${si+1}</div>` : '';
+        const del = ex.sets.length > 1 ? `<div style="display:flex;align-items:flex-end;padding-bottom:1px"><button class="del-set-btn" onclick="delGrpSet('${dk}',${ei},${si})">&#8722;</button></div>` : '';
+        return lbl + `<div class="grp-cardio-fields">` +
+          `<div class="igroup"><div class="ilabel">Min</div><input type="number" inputmode="decimal" placeholder="—" value="${escH(s.dur||'')}" onchange="svGrpSet('${dk}',${ei},${si},'dur',this.value)"></div>` +
+          `<div class="igroup"><div class="ilabel">Cal / m</div><input type="number" inputmode="decimal" placeholder="—" value="${escH(s.cal||'')}" onchange="svGrpSet('${dk}',${ei},${si},'cal',this.value)"></div>` +
+          `<div class="igroup" style="max-width:72px"><div class="ilabel">RPE</div><input type="number" inputmode="decimal" placeholder="—" min="1" max="10" step="0.5" value="${escH(s.rpe||'')}" onchange="svGrpSet('${dk}',${ei},${si},'rpe',this.value)"></div>` +
+          del + `</div>`;
       }).join('');
-      setSection =
-        '<div style="margin-top:4px">'+rounds+
-        '<button class="add-set-btn" style="margin-top:8px" onclick="addGrpSet(''+dk+'','+ei+')">+ Round</button></div>';
+      setSection = `<div style="margin-top:4px">${rounds}` +
+        `<button class="add-set-btn" style="margin-top:8px" onclick="addGrpSet('${dk}',${ei})">+ Round</button></div>`;
     }
 
-    return '<div class="ex-card" style="margin-bottom:10px">'+
-      '<div class="ex-header">'+
-      '<input class="grp-ex-name-inp" type="text" placeholder="Exercise name" value="'+escH(ex.name)+'" onchange="svGrpExName(''+dk+'','+ei+',this.value)">'+
-      '<div style="display:flex;align-items:center;gap:4px">'+typeSel+
-      '<button class="grp-ex-del-btn" onclick="delGrpEx(''+dk+'','+ei+')">&#215;</button>'+
-      '</div></div>'+
-      setSection +
-      prevHint +
-      '</div>';
+    return `<div class="ex-card" style="margin-bottom:10px">` +
+      `<div class="ex-header">` +
+      `<input class="grp-ex-name-inp" type="text" placeholder="Exercise name" value="${escH(ex.name)}" onchange="svGrpExName('${dk}',${ei},this.value)">` +
+      `<div style="display:flex;align-items:center;gap:4px">${typeSel}` +
+      `<button class="grp-ex-del-btn" onclick="delGrpEx('${dk}',${ei})">&#215;</button>` +
+      `</div></div>${setSection}${prevHint}</div>`;
   }).join('');
 }
 
