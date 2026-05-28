@@ -2046,7 +2046,24 @@ function isGroupDay(w, dk) { return state.sessions['grp_w'+w+'_'+dk+'_on'] === '
 function setGroupDay(w, dk, on) { state.sessions['grp_w'+w+'_'+dk+'_on'] = on ? '1' : ''; persist(); }
 function gvGroup(w, dk) { return state.sessions['grp_w'+w+'_'+dk+'_text'] || ''; }
 function svGroup(w, dk, text) { state.sessions['grp_w'+w+'_'+dk+'_text'] = text; persist(); }
-function toggleGroupDay(dk) { setGroupDay(week, dk, !isGroupDay(week, dk)); renderLog(); }
+function toggleGroupDay(dk) {
+  const isNowGrp = !isGroupDay(week, dk);
+  setGroupDay(week, dk, isNowGrp);
+  if (isNowGrp && gvGrpExs(week, dk).length === 0) {
+    svGrpExs(week, dk, [{name:'', type:'weight', sets:[{w:'',r:''}]}]);
+  }
+  try {
+    renderLog();
+  } catch(e) {
+    console.error('renderLog error:', e);
+    showToast('Error loading group view: ' + e.message);
+    return;
+  }
+  if (isNowGrp) {
+    const el = document.getElementById('grp-exs-' + dk);
+    if (el) setTimeout(function(){ el.scrollIntoView({behavior:'smooth', block:'center'}); }, 80);
+  }
+}
 
 function saveSession() {
   const mins = getElapsedMin();
