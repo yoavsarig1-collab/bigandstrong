@@ -941,6 +941,118 @@ html.theme-light .save-float { color: #fff; }
 }
 .prev-set-chip b { color: var(--accent2); font-weight: 500; }
 
+
+/* ── GROUP EXERCISE TYPE SELECTOR ── */
+.grp-type-sel {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.gts-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.gts-btn.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #fff;
+}
+html.theme-light .gts-btn.active { color: #fff; }
+/* name input inside grp card header */
+.grp-ex-name-inp {
+  flex: 1;
+  height: 32px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  padding: 0 2px;
+  min-width: 0;
+}
+.grp-ex-name-inp::placeholder { color: var(--muted); font-weight: 400; font-size: 13px; }
+.grp-ex-name-inp:focus { border-bottom-color: var(--accent2); }
+.grp-ex-del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.grp-add-ex-btn {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.5px;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.grp-add-ex-btn:active { border-color: var(--accent2); color: var(--accent2); }
+.grp-exs-empty {
+  text-align: center;
+  padding: 12px 0 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+/* cardio fields inside group card */
+.grp-cardio-fields {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+.grp-cardio-fields .igroup { flex: 1; }
+.grp-cardio-fields input {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+  outline: none;
+  padding: 0 6px;
+  -webkit-appearance: none;
+}
+.grp-cardio-fields input:focus { border-color: var(--accent2); }
+.grp-round-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  margin-top: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -2193,7 +2305,7 @@ function handlePhotoSelected(input) {
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-                { type: 'text', text: 'This is a photo of a workout. If it shows strength/resistance exercises with identifiable sets and reps (gym whiteboard, app screenshot, CrossFit board), respond ONLY with a JSON array: [{"name":"Exercise Name","sets":[{"w":"weight_in_kg_or_empty","r":"rep_count"}]}]. If it is cardio (run/swim/cycle/HIIT) or a class without clear per-set data, respond ONLY with a plain-text summary (50 words max, no JSON). Reply with one format only, nothing else.' }
+                { type: 'text', text: 'This is a photo of a workout (whiteboard, app, CrossFit board, or similar). Identify each exercise and respond ONLY with a JSON array. For strength/weight exercises: {"name":"...","type":"weight","sets":[{"w":"kg_or_empty","r":"reps"}]}. For timed holds or intervals: {"name":"...","type":"timed","sets":[{"t":"time_eg_30s"}]}. For cardio machines (assault bike, row, ski, run, etc.): {"name":"...","type":"cardio","sets":[{"dur":"minutes_or_empty","cal":"calories_or_empty","rpe":""}]}. If you cannot identify individual exercises, respond with a plain-text summary (40 words max). Reply with one format only, nothing else.' }
               ]
             }]
           })
@@ -2209,10 +2321,14 @@ function handlePhotoSelected(input) {
         const jStart = raw.indexOf('[');
         if (jStart !== -1) { try { parsed = JSON.parse(raw.slice(jStart)); } catch(e) {} }
         if (parsed && Array.isArray(parsed) && parsed.length) {
-          const exs = parsed.map(ex => ({
-            name: String(ex.name || ''),
-            sets: Array.isArray(ex.sets) ? ex.sets.map(s => ({w:String(s.w||''),r:String(s.r||'')})) : [{w:'',r:''}]
-          }));
+          const exs = parsed.map(ex => {
+            const t = ex.type || 'weight';
+            let sets;
+            if (t === 'timed') sets = Array.isArray(ex.sets) ? ex.sets.map(s=>({t:String(s.t||'')})) : [{t:''}];
+            else if (t === 'cardio') sets = Array.isArray(ex.sets) ? ex.sets.map(s=>({dur:String(s.dur||''),cal:String(s.cal||''),rpe:String(s.rpe||'')})) : [{dur:'',cal:'',rpe:''}];
+            else sets = Array.isArray(ex.sets) ? ex.sets.map(s=>({w:String(s.w||''),r:String(s.r||'')})) : [{w:'',r:''}];
+            return {name:String(ex.name||''), type:t, sets};
+          });
           svGrpExs(week, dayKey, exs);
           const exsEl = document.getElementById('grp-exs-' + dayKey);
           if (exsEl) exsEl.innerHTML = renderGrpExs(week, dayKey);
@@ -3318,7 +3434,7 @@ function setupSaveFloat() {
 }
 
 
-// ─── GROUP EXERCISE LOG ─────────────────────────────────────────────────
+// ─── GROUP EXERCISE LOG v2 ──────────────────────────────────────────────────
 function gvGrpExs(w, dk) {
   try { return JSON.parse(state.sessions['grp_w'+w+'_'+dk+'_exs'] || '[]'); }
   catch(e) { return []; }
@@ -3327,33 +3443,148 @@ function svGrpExs(w, dk, exs) {
   state.sessions['grp_w'+w+'_'+dk+'_exs'] = JSON.stringify(exs);
   persist();
 }
+
+function _grpDefaultSet(type) {
+  if (type === 'timed')  return {t:''};
+  if (type === 'cardio') return {dur:'', cal:'', rpe:''};
+  return {w:'', r:''};
+}
+
+function getGrpPrevHint(w, dk, name) {
+  if (w <= 1 || !name.trim()) return '';
+  const prevExs = gvGrpExs(w-1, dk);
+  const match = prevExs.find(function(e) {
+    return e.name.trim().toLowerCase() === name.trim().toLowerCase();
+  });
+  if (!match) return '';
+  const type = match.type || 'weight';
+  if (type === 'weight') {
+    const chips = match.sets.map(function(s, i) {
+      if (!s.w && !s.r) return null;
+      let chip = 'S'+(i+1)+': ';
+      if (s.w && s.r) chip += '<b>'+escH(s.w)+'</b>×'+escH(s.r);
+      else if (s.w) chip += '<b>'+escH(s.w)+'</b> kg';
+      else chip += escH(s.r)+' reps';
+      return '<span class="prev-set-chip">'+chip+'</span>';
+    }).filter(Boolean);
+    if (!chips.length) return '';
+    return '<div class="prev-sets-row">'+chips.join('')+'</div>';
+  }
+  if (type === 'timed') {
+    const chips = match.sets.map(function(s, i) {
+      if (!s.t) return null;
+      return '<span class="prev-set-chip">S'+(i+1)+': <b>'+escH(s.t)+'</b></span>';
+    }).filter(Boolean);
+    if (!chips.length) return '';
+    return '<div class="prev-sets-row">'+chips.join('')+'</div>';
+  }
+  if (type === 'cardio') {
+    const chips = match.sets.map(function(s, i) {
+      if (!s.dur && !s.rpe && !s.cal) return null;
+      let parts = [];
+      if (s.dur) parts.push('<b>'+escH(s.dur)+'</b> min');
+      if (s.cal) parts.push(escH(s.cal)+' cal');
+      if (s.rpe) parts.push('RPE '+escH(s.rpe));
+      const label = match.sets.length > 1 ? 'R'+(i+1)+': ' : '';
+      return '<span class="prev-set-chip">'+label+parts.join(' · ')+'</span>';
+    }).filter(Boolean);
+    if (!chips.length) return '';
+    return '<div class="prev-sets-row">'+chips.join('')+'</div>';
+  }
+  return '';
+}
+
 function renderGrpExs(w, dk) {
   const exs = gvGrpExs(w, dk);
   if (!exs.length) {
-    return '<div class="grp-exs-empty">No exercises yet — add one or scan a photo</div>';
+    return '<div class="grp-exs-empty">No exercises yet — add one below or scan a photo</div>';
   }
   return exs.map(function(ex, ei) {
-    const setRows = ex.sets.map(function(s, si) {
-      return `<div class="set-row${s.w && s.r ? ' complete' : ''}">` +
-        `<span class="set-num">S${si+1}</span>` +
-        `<input class="set-w-inp" type="number" inputmode="decimal" placeholder="kg" value="${escH(s.w)}" onchange="svGrpSet('${dk}',${ei},${si},'w',this.value)">` +
-        `<input class="set-v-inp" type="number" inputmode="decimal" placeholder="reps" value="${escH(s.r)}" onchange="svGrpSet('${dk}',${ei},${si},'r',this.value)">` +
-        `<button class="del-set-btn" onclick="delGrpSet('${dk}',${ei},${si})">&#215;</button>` +
-        `</div>`;
-    }).join('');
-    return `<div class="grp-ex-item">` +
-      `<div class="grp-ex-header">` +
-      `<input class="grp-ex-name-inp" type="text" placeholder="Exercise name" value="${escH(ex.name)}" onchange="svGrpExName('${dk}',${ei},this.value)">` +
-      `<button class="grp-ex-del-btn" onclick="delGrpEx('${dk}',${ei})">&#215;</button>` +
-      `</div>` +
-      `<div class="grp-sets-list">${setRows}</div>` +
-      `<button class="add-set-btn" style="margin-top:6px" onclick="addGrpSet('${dk}',${ei})">+ Set</button>` +
-      `</div>`;
+    const type = ex.type || 'weight';
+    const prevHint = getGrpPrevHint(w, dk, ex.name);
+
+    // type selector
+    const typeSel =
+      '<div class="grp-type-sel">' +
+      ['weight','timed','cardio'].map(function(t) {
+        const labels = {weight:'Wt', timed:'⏱', cardio:'Cardio'};
+        return '<button class="gts-btn'+(type===t?' active':'')+'" onclick="setGrpExType(''+dk+'','+ei+',''+t+'')">'+labels[t]+'</button>';
+      }).join('') +
+      '</div>';
+
+    // set rows
+    let setSection = '';
+    if (type === 'weight') {
+      const rows = ex.sets.map(function(s, si) {
+        const complete = !!(s.w && s.r);
+        return '<div class="set-row'+(complete?' complete':'')+'">'+
+          '<span class="set-num" style="cursor:pointer" onclick="startRest(_restDefault)">Set '+(si+1)+'</span>'+
+          '<input class="set-w-inp" type="text" inputmode="decimal" placeholder="kg" value="'+escH(s.w)+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','w',this.value)">'+
+          '<input class="set-v-inp" type="number" inputmode="numeric" placeholder="reps" value="'+escH(s.r)+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','r',this.value)" onblur="if(this.value)startRest(_restDefault)">'+
+          (ex.sets.length > 1 ? '<button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button>' : '')+
+          '</div>';
+      }).join('');
+      setSection =
+        '<div class="sets-section">'+
+        '<div class="sets-header"><div class="ilabel">Sets · Weight · Reps</div>'+
+        '<button class="add-set-btn" onclick="addGrpSet(''+dk+'','+ei+')">+ Set</button></div>'+
+        '<div class="sets-list">'+rows+'</div></div>';
+    } else if (type === 'timed') {
+      const rows = ex.sets.map(function(s, si) {
+        return '<div class="set-row">'+
+          '<span class="set-num">Set '+(si+1)+'</span>'+
+          '<input class="set-v-inp" type="text" inputmode="text" placeholder="time" value="'+escH(s.t||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','t',this.value)">'+
+          (ex.sets.length > 1 ? '<button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button>' : '')+
+          '</div>';
+      }).join('');
+      setSection =
+        '<div class="sets-section">'+
+        '<div class="sets-header"><div class="ilabel">Sets · Time</div>'+
+        '<button class="add-set-btn" onclick="addGrpSet(''+dk+'','+ei+')">+ Set</button></div>'+
+        '<div class="sets-list">'+rows+'</div></div>';
+    } else if (type === 'cardio') {
+      const rounds = ex.sets.map(function(s, si) {
+        const label = ex.sets.length > 1 ? '<div class="grp-round-label">Round '+(si+1)+'</div>' : '';
+        return label +
+          '<div class="grp-cardio-fields">'+
+          '<div class="igroup"><div class="ilabel">Min</div>'+
+          '<input type="number" inputmode="decimal" placeholder="—" value="'+escH(s.dur||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','dur',this.value)"></div>'+
+          '<div class="igroup"><div class="ilabel">Cal / m</div>'+
+          '<input type="number" inputmode="decimal" placeholder="—" value="'+escH(s.cal||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','cal',this.value)"></div>'+
+          '<div class="igroup" style="max-width:72px"><div class="ilabel">RPE</div>'+
+          '<input type="number" inputmode="decimal" placeholder="—" min="1" max="10" step="0.5" value="'+escH(s.rpe||'')+'" onchange="svGrpSet(''+dk+'','+ei+','+si+','rpe',this.value)"></div>'+
+          (ex.sets.length > 1 ? '<div style="display:flex;align-items:flex-end;padding-bottom:1px"><button class="del-set-btn" onclick="delGrpSet(''+dk+'','+ei+','+si+')">&#8722;</button></div>' : '')+
+          '</div>';
+      }).join('');
+      setSection =
+        '<div style="margin-top:4px">'+rounds+
+        '<button class="add-set-btn" style="margin-top:8px" onclick="addGrpSet(''+dk+'','+ei+')">+ Round</button></div>';
+    }
+
+    return '<div class="ex-card" style="margin-bottom:10px">'+
+      '<div class="ex-header">'+
+      '<input class="grp-ex-name-inp" type="text" placeholder="Exercise name" value="'+escH(ex.name)+'" onchange="svGrpExName(''+dk+'','+ei+',this.value)">'+
+      '<div style="display:flex;align-items:center;gap:4px">'+typeSel+
+      '<button class="grp-ex-del-btn" onclick="delGrpEx(''+dk+'','+ei+')">&#215;</button>'+
+      '</div></div>'+
+      setSection +
+      prevHint +
+      '</div>';
   }).join('');
+}
+
+function setGrpExType(dk, ei, type) {
+  const exs = gvGrpExs(week, dk);
+  if (!exs[ei]) return;
+  exs[ei].type = type;
+  exs[ei].sets = [_grpDefaultSet(type)];
+  svGrpExs(week, dk, exs);
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) el.innerHTML = renderGrpExs(week, dk);
 }
 function addGrpEx(dk) {
   const exs = gvGrpExs(week, dk);
-  exs.push({name: '', sets: [{w:'', r:''}]});
+  exs.push({name: '', type: 'weight', sets: [{w:'', r:''}]});
   svGrpExs(week, dk, exs);
   const el = document.getElementById('grp-exs-' + dk);
   if (el) el.innerHTML = renderGrpExs(week, dk);
@@ -3368,7 +3599,7 @@ function delGrpEx(dk, ei) {
 function addGrpSet(dk, ei) {
   const exs = gvGrpExs(week, dk);
   if (!exs[ei]) return;
-  exs[ei].sets.push({w:'', r:''});
+  exs[ei].sets.push(_grpDefaultSet(exs[ei].type || 'weight'));
   svGrpExs(week, dk, exs);
   const el = document.getElementById('grp-exs-' + dk);
   if (el) el.innerHTML = renderGrpExs(week, dk);
@@ -3377,7 +3608,7 @@ function delGrpSet(dk, ei, si) {
   const exs = gvGrpExs(week, dk);
   if (!exs[ei]) return;
   exs[ei].sets.splice(si, 1);
-  if (!exs[ei].sets.length) exs[ei].sets.push({w:'', r:''});
+  if (!exs[ei].sets.length) exs[ei].sets.push(_grpDefaultSet(exs[ei].type || 'weight'));
   svGrpExs(week, dk, exs);
   const el = document.getElementById('grp-exs-' + dk);
   if (el) el.innerHTML = renderGrpExs(week, dk);
@@ -3387,6 +3618,18 @@ function svGrpExName(dk, ei, val) {
   if (!exs[ei]) return;
   exs[ei].name = val;
   svGrpExs(week, dk, exs);
+  // refresh hints only (don't re-render — cursor would jump)
+  const el = document.getElementById('grp-exs-' + dk);
+  if (el) {
+    const cards = el.querySelectorAll('.ex-card');
+    if (cards[ei]) {
+      const hint = cards[ei].querySelector('.prev-sets-row, .grp-exs-empty');
+      const newHint = getGrpPrevHint(week, dk, val);
+      // update hint if name matches something from last week
+      if (hint) hint.outerHTML = newHint;
+      else if (newHint) cards[ei].insertAdjacentHTML('beforeend', newHint);
+    }
+  }
 }
 function svGrpSet(dk, ei, si, field, val) {
   const exs = gvGrpExs(week, dk);
