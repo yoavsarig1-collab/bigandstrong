@@ -2322,7 +2322,7 @@ function handlePhotoSelected(input) {
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-                { type: 'text', text: 'This is a photo of a workout (whiteboard, app, CrossFit board, or similar). Identify each exercise and respond ONLY with a JSON array. For strength/weight exercises: {"name":"...","type":"weight","sets":[{"w":"kg_or_empty","r":"reps"}]}. For timed holds or intervals: {"name":"...","type":"timed","sets":[{"t":"time_eg_30s"}]}. For cardio machines (assault bike, row, ski, run, etc.): {"name":"...","type":"cardio","sets":[{"dur":"minutes_or_empty","cal":"calories_or_empty","rpe":""}]}. If you cannot identify individual exercises, respond with a plain-text summary (40 words max). Reply with one format only, nothing else.' }
+                { type: 'text', text: 'This is a photo of a workout (whiteboard, app, CrossFit board, or similar). Identify each exercise and respond ONLY with a raw JSON array — no markdown, no code fences, no explanation. For strength/weight exercises: {"name":"...","type":"weight","sets":[{"w":"kg_or_empty","r":"reps"}]}. For timed holds or intervals: {"name":"...","type":"timed","sets":[{"t":"time_eg_30s"}]}. For cardio machines (assault bike, row, ski, run, etc.): {"name":"...","type":"cardio","sets":[{"dur":"minutes_or_empty","cal":"calories_or_empty","rpe":""}]}. If you cannot identify individual exercises at all, respond with a plain-text summary (40 words max). Start your response with [ and end with ].' }
               ]
             }]
           })
@@ -2336,7 +2336,14 @@ function handlePhotoSelected(input) {
         const raw = data.content[0].text.trim();
         let parsed = null;
         const jStart = raw.indexOf('[');
-        if (jStart !== -1) { try { parsed = JSON.parse(raw.slice(jStart)); } catch(e) {} }
+        if (jStart !== -1) {
+          const jEnd = raw.lastIndexOf(']');
+          if (jEnd > jStart) {
+            try { parsed = JSON.parse(raw.slice(jStart, jEnd + 1)); } catch(e) {
+              console.error('JSON parse error:', e.message, raw.slice(jStart, jEnd + 1).slice(-100));
+            }
+          }
+        }
         if (parsed && Array.isArray(parsed) && parsed.length) {
           const exs = parsed.map(ex => {
             const t = ex.type || 'weight';
