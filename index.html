@@ -312,6 +312,53 @@ body{display:flex;flex-direction:column;}
 
 /* ── SETTINGS SCREEN ── */
 .settings-body{flex:1;overflow-y:auto;padding:16px;}
+/* ── PROGRAM EDITOR ── */
+.prog-day-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;
+}
+.prog-day-name{font-family:'DM Mono',monospace;font-size:12px;color:var(--text);text-transform:uppercase;letter-spacing:0.8px;}
+.prog-day-toggle{color:var(--muted);font-size:16px;transition:transform 0.2s;}
+.prog-day-toggle.open{transform:rotate(180deg);}
+.prog-day-body{display:none;}
+.prog-day-body.open{display:block;}
+.prog-ex-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--border-line);
+}
+.prog-ex-row:last-child{border-bottom:none;}
+.prog-ex-name-in{
+  flex:1;background:none;border:none;border-bottom:1px solid var(--border2);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
+  padding:3px 2px;outline:none;min-width:0;
+}
+.prog-ex-name-in:focus{border-bottom-color:var(--accent);}
+.prog-type-chip{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.5px;
+  text-transform:uppercase;padding:2px 6px;border-radius:4px;
+  background:var(--surface);border:1px solid var(--border2);color:var(--muted);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.prog-del-btn{
+  background:none;border:none;color:var(--muted);font-size:18px;
+  cursor:pointer;padding:0;min-width:28px;text-align:center;flex-shrink:0;
+}
+.prog-add-row{
+  display:flex;align-items:center;gap:8px;
+  padding-top:10px;
+}
+.prog-add-name{
+  flex:1;background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:13px;padding:8px 10px;outline:none;
+}
+.prog-add-name:focus{border-color:var(--accent);}
+.prog-add-btn{
+  height:36px;padding:0 12px;background:var(--accent);color:#000;
+  border:none;border-radius:8px;font-family:'DM Mono',monospace;
+  font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
 .settings-section{margin-bottom:24px;}
 .settings-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
 .settings-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
@@ -422,6 +469,36 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
   z-index:50;display:none;align-items:flex-end;justify-content:center;
 }
 .alts-overlay.open{display:flex;}
+/* ── HISTORY SHEET ── */
+.hist-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:50;display:none;align-items:flex-end;justify-content:center;
+}
+.hist-overlay.open{display:flex;}
+.hist-sheet{
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:20px 20px calc(var(--safe-bot) + 20px);
+  width:100%;max-height:88vh;overflow-y:auto;
+}
+.hist-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);margin-bottom:2px;}
+.hist-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+.hist-chart{margin-bottom:16px;overflow-x:auto;}
+.hist-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:12px;
+}
+.hist-row:last-child{border-bottom:none;}
+.hist-row-week{color:var(--muted);min-width:32px;}
+.hist-row-val{color:var(--text);flex:1;}
+.hist-row-pr{color:var(--accent);font-size:10px;letter-spacing:0.5px;}
+.hist-row.cur-week .hist-row-week{color:var(--accent);}
+.hist-close{
+  width:100%;height:46px;border-radius:10px;
+  border:1px solid var(--border2);background:none;
+  color:var(--muted);font-family:'DM Mono',monospace;
+  font-size:12px;letter-spacing:0.5px;cursor:pointer;margin-top:14px;
+}
 .alts-sheet{
   background:var(--surface);border-radius:20px 20px 0 0;
   padding:20px 20px calc(var(--safe-bot) + 20px);
@@ -1178,6 +1255,14 @@ html.theme-light .gts-btn.active { color: #fff; }
     </div>
 
     <div class="settings-section">
+      <div class="settings-label">Program Editor</div>
+      <div class="settings-card">
+        <p style="margin-bottom:12px">Edit your base program. Changes apply to future weeks — current week stays as-is.</p>
+        <div id="prog-editor-body"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-label">Add to home screen</div>
       <div class="settings-card">
         <p>On iPhone: tap the <strong>Share</strong> button in Safari → <strong>"Add to Home Screen"</strong>. This app will work offline and look like a native app.</p>
@@ -1272,6 +1357,17 @@ html.theme-light .gts-btn.active { color: #fff; }
   </div>
 </div>
 
+
+<!-- ══ EXERCISE HISTORY SHEET ══ -->
+<div class="hist-overlay" id="hist-overlay" onclick="if(event.target===this)closeHistorySheet()">
+  <div class="hist-sheet">
+    <div class="hist-title" id="hist-title"></div>
+    <div class="hist-sub" id="hist-sub"></div>
+    <div class="hist-chart" id="hist-chart"></div>
+    <div id="hist-rows"></div>
+    <button class="hist-close" onclick="closeHistorySheet()">Close</button>
+  </div>
+</div>
 
 <!-- ══ REST TIMER OVERLAY ══ -->
 <div class="rest-overlay" id="rest-overlay" onclick="if(event.target===this)stopRest()">
@@ -1513,6 +1609,60 @@ function openAltsSheet(dayKey, exIdx) {
 function closeAltsSheet() {
   document.getElementById('alts-overlay').classList.remove('open');
   _altsTarget = null;
+}
+
+// ─── EXERCISE HISTORY SHEET ─────────────────────────────────────────
+function showExHistory(dk, exIdx) {
+  const ex = (getWeekExercises(week, dk) || [])[exIdx];
+  if (!ex || (ex.type || 'weight') !== 'weight') return;
+  document.getElementById('hist-title').textContent = ex.n.split('/')[0].trim();
+  document.getElementById('hist-sub').textContent = 'Weight progression · all weeks';
+  // Collect per-week max weight
+  const data = [];
+  let allTimeMax = 0;
+  for (let w = 1; w <= 16; w++) {
+    const sc = getSetCount(w, dk, exIdx, ex);
+    let maxW = 0;
+    let bestR = '';
+    for (let s = 0; s < sc; s++) {
+      const wv = parseFloat(getSetWeightVal(w, dk, exIdx, s));
+      const rv = gv(w, dk, exIdx, 's' + s);
+      if (!isNaN(wv) && wv > maxW) { maxW = wv; bestR = rv || ''; }
+    }
+    data.push({w, maxW, bestR});
+    if (maxW > allTimeMax) allTimeMax = maxW;
+  }
+  // SVG bar chart
+  const filled = data.filter(d => d.maxW > 0);
+  let chartHtml = '';
+  if (filled.length > 0 && allTimeMax > 0) {
+    const barW = 16, gap = 3, h = 60, totalW = 16 * (barW + gap);
+    let bars = '';
+    data.forEach(d => {
+      const barH = d.maxW > 0 ? Math.max(4, Math.round((d.maxW / allTimeMax) * h)) : 2;
+      const isPR = d.maxW > 0 && data.slice(0, d.w - 1).every(prev => prev.maxW < d.maxW);
+      const col = d.w === week ? 'var(--accent)' : isPR ? 'var(--accent2)' : 'var(--border2)';
+      const x = (d.w - 1) * (barW + gap);
+      bars += `<rect x="${x}" y="${h - barH}" width="${barW}" height="${barH}" rx="3" fill="${col}"/>`;
+    });
+    chartHtml = `<svg width="${totalW}" height="${h + 4}" viewBox="0 0 ${totalW} ${h + 4}" style="display:block">${bars}</svg>`;
+  }
+  document.getElementById('hist-chart').innerHTML = chartHtml;
+  // Rows — only weeks with data, most recent first
+  const rows = data.filter(d => d.maxW > 0).reverse().map(d => {
+    const isCur = d.w === week;
+    const isPR = d.maxW > 0 && data.slice(0, d.w - 1).every(prev => prev.maxW < d.maxW);
+    return `<div class="hist-row${isCur?' cur-week':''}">
+      <span class="hist-row-week">W${d.w}</span>
+      <span class="hist-row-val">${d.maxW} kg${d.bestR?' × '+d.bestR:''}</span>
+      ${isPR?'<span class="hist-row-pr">PR</span>':''}
+    </div>`;
+  }).join('');
+  document.getElementById('hist-rows').innerHTML = rows || '<div style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;padding:12px 0">No data yet</div>';
+  document.getElementById('hist-overlay').classList.add('open');
+}
+function closeHistorySheet() {
+  document.getElementById('hist-overlay').classList.remove('open');
 }
 
 function useAlt(altIdx) {
@@ -1838,7 +1988,7 @@ function renderLogBody() {
       const altName = gv(week,D.key,i,'altname');
       h += `<div class="ex-card" id="ex-${D.key}-${i}">
         <div class="ex-header">
-          <div class="ex-name">${escH(ex.n)}${altName?`<span class="alt-badge">ALT</span>`:''}</div>
+          <div class="ex-name" onclick="showExHistory('${D.key}',${i})" style="cursor:pointer">${escH(ex.n)}${altName?`<span class="alt-badge">ALT</span>`:''}${(exType==='weight'&&isPRThisWeek(D.key,i,ex))?'<span class="pr-badge">PR</span>':''}</div>
           <div style="display:flex;align-items:center;gap:0;">
             <button class="ex-alt-btn" onclick="openAltsSheet('${D.key}',${i})">⇄ Alt</button>
             <button class="ex-edit-btn" onclick="openEditModal('${D.key}',${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -1858,6 +2008,18 @@ function renderLogBody() {
 
     h += `<button class="add-ex-btn" onclick="openAddModal('${D.key}')">＋ Add exercise</button>`;
   }
+
+  // Energy / feel — always shown
+  const enKey = `energy_w${week}_${D.key}`;
+  const en = state.sessions[enKey] || 0;
+  const enLabels = ['Low','','OK','','Peak'];
+  h += `<div class="ankle-block">
+    <div class="ankle-label">Energy &amp; feel</div>
+    <div class="ankle-row">
+      ${[1,2,3,4,5].map(n=>`<button class="abtn${en===n?' sel':''}" onclick="setEnergy('${D.key}',${n})">${n}</button>`).join('')}
+    </div>
+    <div class="ankle-scale-labels">${enLabels.map(l=>`<span>${l}</span>`).join('')}</div>
+  </div>`;
 
   // Ankle — always shown
   const ak = state.sessions[`ankle_w${week}`] || 0;
@@ -1882,6 +2044,7 @@ function renderLogBody() {
   h += `<div class="save-sticky"><button class="btn-primary" onclick="saveSession()">SAVE SESSION</button></div>`;
   h += `<button class="undo-btn" onclick="undoLast()">↩ Undo last entry</button>`;
   h += `<button class="btn-secondary" onclick="getAIAnalysis()">GET AI ANALYSIS</button>`;
+  h += `<button class="btn-secondary" onclick="shareWorkout('${D.key}')">SHARE WORKOUT</button>`;
   h += `<button class="btn-secondary" onclick="exportJSON()">EXPORT JSON</button>`;
 
   if (week>1) { try { h += renderProgress(D); } catch(e) { console.error('renderProgress error:', e); } }
@@ -1900,8 +2063,11 @@ function setAnkle(n) {
   renderLogBody();
 }
 
-
-
+function setEnergy(dk, n) {
+  state.sessions[`energy_w${week}_${dk}`] = n;
+  persist();
+  renderLogBody();
+}
 
 // ─── PER-SET HELPERS ─────────────────────────────────────────────
 function defaultSetCount(ex) {
@@ -2576,19 +2742,50 @@ function buildDataSummary() {
   return lines.length ? lines.join('\n') : 'No session data logged for this week yet.';
 }
 
+function renderVolumeChart() {
+  // Total weekly volume for each week that has any data
+  const weekVols = [];
+  let maxVol = 0;
+  for (let w = 1; w <= 16; w++) {
+    let total = 0;
+    state.days.forEach(D => { total += calcVolume(w, D.key); });
+    weekVols.push({w, vol: total});
+    if (total > maxVol) maxVol = total;
+  }
+  const hasData = weekVols.some(d => d.vol > 0);
+  if (!hasData) return '';
+  const barW = 16, gap = 3, chartH = 80;
+  const totalW = 16 * (barW + gap);
+  let bars = '';
+  weekVols.forEach(d => {
+    const barH = d.vol > 0 ? Math.max(4, Math.round((d.vol / maxVol) * chartH)) : 2;
+    const col = d.w === week ? 'var(--accent)' : d.vol > 0 ? 'var(--accent2)' : 'var(--border2)';
+    const x = (d.w - 1) * (barW + gap);
+    bars += `<rect x="${x}" y="${chartH - barH}" width="${barW}" height="${barH}" rx="3" fill="${col}"/>`;
+    if (d.w === week) bars += `<text x="${x + barW/2}" y="${chartH + 12}" text-anchor="middle" fill="var(--accent)" font-family="DM Mono,monospace" font-size="9">W${d.w}</text>`;
+  });
+  const svg = `<svg width="${totalW}" height="${chartH + 16}" viewBox="0 0 ${totalW} ${chartH + 16}" style="display:block">${bars}</svg>`;
+  return `<div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;">Weekly Volume (kg)</div>
+    <div style="overflow-x:auto">${svg}</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px">W1 → W16 · Current week in green</div>
+  </div>`;
+}
+
 function renderAnalysis() {
   const body = document.getElementById('analysis-body');
   const analyses = Object.values(state.analyses||{}).sort((a,b)=>b.week-a.week);
+  const chartHtml = renderVolumeChart();
 
   if (!analyses.length) {
-    body.innerHTML = `<div class="empty-state">
+    body.innerHTML = (chartHtml || '') + `<div class="empty-state">
       <span class="big">NO ANALYSIS YET</span>
       Log a few sessions then tap "⚡ Get AI Analysis" in the Log tab.
     </div>`;
     return;
   }
 
-  body.innerHTML = analyses.map(a => {
+  body.innerHTML = chartHtml + analyses.map(a => {
     const d = new Date(a.date);
     const dateStr = d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
     return `<div class="analysis-card">
@@ -2617,6 +2814,83 @@ function loadSettingsUI() {
   document.getElementById('pref-bw').value = state.prefs.bw || '';
   document.getElementById('pref-notes').value = state.prefs.notes || '';
   document.getElementById('pref-startdate').value = state.prefs.startDate || '';
+  renderProgEditor();
+}
+
+function renderProgEditor() {
+  const el = document.getElementById('prog-editor-body');
+  if (!el) return;
+  el.innerHTML = state.days.map(function(D, di) {
+    const exRows = D.exercises.map(function(ex, ei) {
+      const typeLabels = {weight:'Wt',timed:'⏱',run:'Run',cardio:'Cardio'};
+      const t = ex.type || 'weight';
+      return `<div class="prog-ex-row">
+        <input class="prog-ex-name-in" value="${escH(ex.n)}" placeholder="Exercise name"
+          onchange="progEditEx('${D.key}',${ei},'n',this.value)">
+        <span class="prog-type-chip" onclick="progCycleType('${D.key}',${ei})">${typeLabels[t]||t}</span>
+        <button class="prog-del-btn" onclick="progDelEx('${D.key}',${ei})">&#215;</button>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:4px">
+      <div class="prog-day-hdr" onclick="progToggleDay('prog-day-${di}')">
+        <span class="prog-day-name">${D.short} · ${D.label}</span>
+        <span class="prog-day-toggle" id="prog-day-arrow-${di}">▾</span>
+      </div>
+      <div class="prog-day-body" id="prog-day-${di}">
+        ${exRows}
+        <div class="prog-add-row">
+          <input class="prog-add-name" id="prog-add-inp-${di}" placeholder="Add exercise..." onkeydown="if(event.key==='Enter')progAddEx('${D.key}',${di})">
+          <button class="prog-add-btn" onclick="progAddEx('${D.key}',${di})">Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function progToggleDay(id) {
+  const body = document.getElementById(id);
+  if (!body) return;
+  const idx = id.split('-').pop();
+  const arrow = document.getElementById('prog-day-arrow-' + idx);
+  body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+function progEditEx(dk, ei, field, val) {
+  const D = state.days.find(d => d.key === dk);
+  if (!D || !D.exercises[ei]) return;
+  D.exercises[ei][field] = val;
+  persist();
+}
+function progCycleType(dk, ei) {
+  const D = state.days.find(d => d.key === dk);
+  if (!D || !D.exercises[ei]) return;
+  const cycle = ['weight','timed','run','cardio'];
+  const cur = D.exercises[ei].type || 'weight';
+  D.exercises[ei].type = cycle[(cycle.indexOf(cur) + 1) % cycle.length];
+  persist();
+  renderProgEditor();
+}
+function progDelEx(dk, ei) {
+  const D = state.days.find(d => d.key === dk);
+  if (!D) return;
+  if (!confirm('Remove "' + (D.exercises[ei]?.n || 'this exercise') + '" from the base program?')) return;
+  D.exercises.splice(ei, 1);
+  persist();
+  renderProgEditor();
+}
+function progAddEx(dk, di) {
+  const inp = document.getElementById('prog-add-inp-' + di);
+  const name = inp ? inp.value.trim() : '';
+  if (!name) { showToast('Enter a name first'); return; }
+  const D = state.days.find(d => d.key === dk);
+  if (!D) return;
+  D.exercises.push({n: name, s: '3×8', base: '', type: 'weight', note: ''});
+  persist();
+  renderProgEditor();
+  // Re-open the day that was just edited
+  const body = document.getElementById('prog-day-' + di);
+  const arrow = document.getElementById('prog-day-arrow-' + di);
+  if (body && !body.classList.contains('open')) { body.classList.add('open'); if (arrow) arrow.classList.add('open'); }
+  showToast(name + ' added to ' + dk);
 }
 
 function saveApiKey() {
@@ -2643,6 +2917,63 @@ function savePrefs() {
 }
 
 // ─── EXPORT ─────────────────────────────────────────────────────────
+function shareWorkout(dk) {
+  const D = state.days.find(d => d.key === dk);
+  if (!D) return;
+  const dateStr = document.getElementById('log-date') ? document.getElementById('log-date').textContent : 'W' + week;
+  const lines = ['Training Log — ' + dateStr + ' · ' + D.label, ''];
+  const isGrp = isGroupDay(week, dk);
+  if (isGrp) {
+    const exs = gvGrpExs(week, dk);
+    exs.forEach(ex => {
+      if (!ex.name) return;
+      const type = ex.type || 'weight';
+      const setStrs = ex.sets.map((s, si) => {
+        if (type === 'weight') return (s.w || '?') + 'kg × ' + (s.r || '?');
+        if (type === 'timed') return s.t || '?';
+        return (s.dur ? s.dur + ' min' : '') + (s.cal ? ' ' + s.cal + ' cal' : '') + (s.rpe ? ' RPE ' + s.rpe : '');
+      }).filter(Boolean);
+      lines.push(ex.name + (setStrs.length ? ' — ' + setStrs.join(' · ') : ''));
+    });
+    const grpNote = gvGroup(week, dk);
+    if (grpNote) lines.push('', grpNote);
+  } else {
+    const exs = getWeekExercises(week, dk);
+    exs.forEach((ex, i) => {
+      const type = ex.type || 'weight';
+      if (type === 'run') {
+        const dur = gv(week, dk, i, 'dur');
+        const pace = gv(week, dk, i, 'pace');
+        const rpe = gv(week, dk, i, 'rpe');
+        let s = ex.n;
+        if (dur) s += ' ' + dur + ' min';
+        if (pace) s += ' @ ' + pace + '/km';
+        if (rpe) s += ' RPE ' + rpe;
+        lines.push(s);
+        return;
+      }
+      const sc = getSetCount(week, dk, i, ex);
+      const setStrs = [];
+      for (let s = 0; s < sc; s++) {
+        const w2 = getSetWeightVal(week, dk, i, s);
+        const r = gv(week, dk, i, 's' + s);
+        if (w2 || r) setStrs.push((w2 ? w2 + 'kg' : '') + (w2 && r ? '×' : '') + (r ? r : ''));
+      }
+      if (setStrs.length) lines.push(ex.n + ' — ' + setStrs.join(' · '));
+    });
+  }
+  const vol = calcVolume(week, dk);
+  if (vol > 0) { lines.push(''); lines.push('Volume: ' + vol.toLocaleString() + ' kg'); }
+  const snote = gv(week, dk, 'session', 'note');
+  if (snote) { lines.push(''); lines.push(snote); }
+  const text = lines.join('\n');
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard ✓')).catch(() => showToast('Could not copy'));
+  }
+}
+
 function exportJSON() {
   const exportData = {
     exportedAt: new Date().toISOString(),
