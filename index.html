@@ -446,6 +446,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .mex-done-btn:active{opacity:0.8;}
 .mex-done-btn.undone{background:none;border:1px solid var(--border2);color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;letter-spacing:0.5px;}
 /* ── ALT BADGE (on exercise card) ── */
+.opt-badge{
+  display:inline-block;font-family:'DM Mono',monospace;font-size:9px;
+  background:rgba(255,255,255,0.06);color:var(--muted);
+  border:1px solid var(--border2);border-radius:3px;
+  padding:1px 5px;margin-left:6px;vertical-align:middle;
+  letter-spacing:0.8px;text-transform:uppercase;
+}
 .alt-badge{
   display:inline-block;font-family:'DM Mono',monospace;font-size:10px;
   background:rgba(255,107,53,0.15);color:var(--accent2);
@@ -1407,6 +1414,7 @@ const DEFAULT_DAYS = [
     { n:'Weighted pull-up', s:'1-2×4-6', base:'+5–10 kg', note:'Or park bar bodyweight. Full hang at bottom.' },
     { n:'Seated row', s:'1-2×6-8', base:'60–70 kg', note:'Chest-supported if available. Drive elbows back.' },
     { n:'Face pull / rear delt fly', s:'1-2×12-15', base:'10–15 kg', note:'Scap retraction focus. High elbows.' },
+    { n:'Forearm / grip work', s:'3 sets', base:'Pick one', note:'Dead hang 3×max hold, OR Plate pinch hold 3×30s, OR DB wrist curls 3×15. Grip training — tack on at end of session, ~5 min.', optional:true },
   ]},
   { key:'tue', short:'Tue', label:'Zone 2 + core', exercises:[
     { n:'Easy run (Zone 2)', s:'30–40 min', base:'Bodyweight', note:'Conversational pace — you should be able to hold a sentence. Nasal breathing preferred.', type:'run' },
@@ -1426,6 +1434,7 @@ const DEFAULT_DAYS = [
     { n:'Lateral raise', s:'2×12-15', base:'6–8 kg DBs', note:'Slight forward lean, lead with elbow.' },
     { n:'EZ curl + OH tricep ext', s:'1-2×12-15', base:'15–20 kg', note:'Superset back-to-back.' },
     { n:'Rear delt row', s:'1-2×12-15', base:'10–12 kg', note:'Chest support, elbows flared wide.' },
+    { n:'Forearm / grip work', s:'3 sets', base:'Pick one', note:'Dead hang 3×max hold, OR Plate pinch hold 3×30s, OR DB wrist curls 3×15. Grip training — tack on at end of session, ~5 min.', optional:true },
   ]},
   { key:'fri', short:'Fri', label:'Speed + power', exercises:[
     { n:'Sprint 6-8×15-20s', s:'6-8 runs', base:'Bodyweight', note:'40–60% effort — controlled, not maximal. 2 min walk between. Focus on mechanics.', type:'run' },
@@ -1724,9 +1733,9 @@ const _UNDO_MAX = 30;
 function loadState() {
   try { state = JSON.parse(localStorage.getItem(SK) || '{}'); } catch(e) { state = {}; }
   // Migrate plan to latest version (updates labels/exercises template, keeps session data)
-  if (!state.planV || state.planV < 2) {
+  if (!state.planV || state.planV < 3) {
     state.days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
-    state.planV = 2;
+    state.planV = 3;
   }
   if (!state.sessions) state.sessions = {};
   if (!state.analyses) state.analyses = {};
@@ -1988,7 +1997,7 @@ function renderLogBody() {
       const altName = gv(week,D.key,i,'altname');
       h += `<div class="ex-card" id="ex-${D.key}-${i}">
         <div class="ex-header">
-          <div class="ex-name" onclick="showExHistory('${D.key}',${i})" style="cursor:pointer">${escH(ex.n)}${altName?`<span class="alt-badge">ALT</span>`:''}${(exType==='weight'&&isPRThisWeek(D.key,i,ex))?'<span class="pr-badge">PR</span>':''}</div>
+          <div class="ex-name" onclick="showExHistory('${D.key}',${i})" style="cursor:pointer">${escH(ex.n)}${altName?`<span class="alt-badge">ALT</span>`:''}${ex.optional?'<span class="opt-badge">optional</span>':''}${(exType==='weight'&&isPRThisWeek(D.key,i,ex))?'<span class="pr-badge">PR</span>':''}</div>
           <div style="display:flex;align-items:center;gap:0;">
             <button class="ex-alt-btn" onclick="openAltsSheet('${D.key}',${i})">⇄ Alt</button>
             <button class="ex-edit-btn" onclick="openEditModal('${D.key}',${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -3589,29 +3598,39 @@ function showToast(msg) {
 // ─── MORNING ROUTINE ────────────────────────────────────────────────
 const MORNING_EXERCISES = [
   {
-    n: 'Diaphragmatic breathing',
-    rx: '10 slow breaths',
-    cue: 'Lie on back, knees bent, one hand on chest and one on belly. Only the belly hand rises. Exhale fully before next breath. Resets core activation and calms morning tension.'
+    n: ‘Diaphragmatic breathing’,
+    rx: ‘10 slow breaths’,
+    cue: ‘Lie on back, knees bent, one hand on chest one hand on belly. Only the belly hand rises. Exhale fully before the next breath. Resets core activation and calms morning tension.’
   },
   {
-    n: 'Hip flexor stretch',
-    rx: '45s each side',
-    cue: 'Kneeling lunge position. Tuck tailbone under and feel the stretch in the front of the back hip. The key is the pelvic tuck — without it you barely stretch anything. Main fix for anterior pelvic tilt.'
+    n: ‘Hip flexor stretch’,
+    rx: ‘45s each side’,
+    cue: ‘Kneeling lunge position. Tuck tailbone under and feel the stretch in the front of the back hip. The key is the pelvic tuck — without it you barely stretch anything. Main fix for anterior pelvic tilt.’
   },
   {
-    n: 'Glute bridge',
-    rx: '2×10, 2s hold at top',
-    cue: "Squeeze glutes hard, tuck pelvis at top, don’t hyperextend the lower back. Hold 2 seconds, lower slow. Activates what anterior pelvic tilt deactivates." 
+    n: ‘90/90 hip rotations’,
+    rx: ‘8 each side’,
+    cue: ‘Sit on floor, both knees bent at 90° — one leg in front, one to the side. Rotate both knees from one side to the other, keeping chest tall throughout. Trains hip internal and external rotation for squat depth and pelvic position.’
   },
   {
-    n: 'Wall angels',
-    rx: '2×10 slow',
-    cue: 'Back flat against wall, feet 5cm out, press lower back and back of head into wall throughout. Arms in goalpost position. Slide up and down keeping elbows and wrists on wall the entire time. Go slow — if you lose contact, reset.'
+    n: ‘Deep squat hold’,
+    rx: ‘60–90s’,
+    cue: ‘Sit into the bottom of a bodyweight squat. Heels down, chest up. Use elbows to gently push knees out. Improves squat mobility and hip flexibility directly.’
   },
   {
-    n: 'Chin tuck',
-    rx: '3×10, 3s hold',
-    cue: 'Pull chin straight back — not down — like making a double chin. Hold 3 seconds. Fixes forward head posture and relieves neck tension. You should feel a stretch at the base of skull.'
+    n: ‘Glute bridge’,
+    rx: ‘2×10, 2s hold at top’,
+    cue: "Squeeze glutes hard, tuck pelvis at top, don’t hyperextend the lower back. Hold 2 seconds, lower slow. Activates what anterior pelvic tilt deactivates."
+  },
+  {
+    n: ‘Wall angels’,
+    rx: ‘2×10 slow’,
+    cue: ‘Back flat against wall, feet 5cm out, press lower back and back of head into wall throughout. Arms in goalpost position. Slide up and down keeping elbows and wrists on wall the entire time. Go slow — if you lose contact, reset.’
+  },
+  {
+    n: ‘Chin tuck + neck isometrics’,
+    rx: ‘3×10 tucks + 10s each direction’,
+    cue: ‘Chin tuck: pull chin straight back (not down) like making a double chin, hold 3s. Then neck isometrics: gently press head into hand front, back, left, right — 10s each direction. Light pressure, don\’t strain.’
   },
 ];
 
@@ -3623,8 +3642,10 @@ function todayKey() {
 }
 
 function getMorningState(dateKey) {
-  if (!state.morning[dateKey]) state.morning[dateKey] = { done: [false,false,false,false,false] };
-  return state.morning[dateKey];
+  if (!state.morning[dateKey]) state.morning[dateKey] = { done: [] };
+  const ms = state.morning[dateKey];
+  while (ms.done.length < MORNING_EXERCISES.length) ms.done.push(false);
+  return ms;
 }
 
 function getMorningStreak() {
