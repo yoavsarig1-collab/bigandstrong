@@ -427,6 +427,26 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 .morning-all-done .check{font-size:48px;line-height:1;}
 .morning-all-done .msg{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);margin-top:8px;}
 .morning-all-done .sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;}
+/* ── ROUTINE TAB SWITCHER ── */
+.routine-tabs{display:flex;gap:0;padding:0 16px 12px;flex-shrink:0;}
+.rtab{flex:1;height:36px;border:1px solid var(--border2);background:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.rtab:first-child{border-radius:8px 0 0 8px;}
+.rtab:last-child{border-radius:0 8px 8px 0;border-left:none;}
+.rtab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+/* ── MOBILITY PROGRESS BAR ── */
+.mob-progress-wrap{padding:0 16px 14px;flex-shrink:0;}
+.mob-progress-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.mob-progress-fill{height:100%;background:var(--accent2);border-radius:2px;transition:width 0.3s ease;}
+.mob-progress-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;letter-spacing:0.5px;}
+/* ── MOBILITY BLOCK LABEL ── */
+.mob-block-hdr{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2);padding:14px 0 8px;border-top:1px solid var(--border);}
+.mob-block-hdr:first-child{border-top:none;padding-top:0;}
+/* ── MOBILITY DONE STATE ── */
+.mob-all-done{text-align:center;padding:24px 16px;margin-bottom:16px;}
+.mob-all-done .check{font-size:44px;line-height:1;}
+.mob-all-done .msg{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--accent2);margin-top:8px;}
+.mob-all-done .sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;}
+.mob-reset-btn{width:100%;height:44px;border-radius:10px;border:1px solid var(--border2);background:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.5px;cursor:pointer;margin-top:16px;}
 .mex-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color 0.2s;}
 .mex-card.done{border-color:rgba(201,241,53,0.4);background:rgba(201,241,53,0.04);}
 .mex-header{display:flex;align-items:center;padding:14px;cursor:pointer;gap:12px;}
@@ -1282,11 +1302,16 @@ html.theme-light .gts-btn.active { color: #fff; }
 <div class="screen" id="screen-morning">
   <div class="topbar">
     <div>
-      <div class="topbar-title">MORNING ROUTINE</div>
+      <div class="topbar-title" id="routine-screen-title">MORNING ROUTINE</div>
       <div class="topbar-sub" id="morning-date-label"></div>
     </div>
     <div id="morning-streak-badge"></div>
   </div>
+  <div class="routine-tabs">
+    <button class="rtab active" id="rtab-morning" onclick="setRoutine('morning')">Morning</button>
+    <button class="rtab" id="rtab-recovery" onclick="setRoutine('recovery')">Recovery</button>
+  </div>
+  <div id="mob-progress-area"></div>
   <div class="morning-body" id="morning-body"></div>
 </div>
 
@@ -3595,6 +3620,166 @@ function showToast(msg) {
 }
 
 
+// ─── MOBILITY / RECOVERY ROUTINE ────────────────────────────────────
+const MOBILITY_BLOCKS = [
+  {
+    label: 'Block 1 — Hips',
+    exercises: [
+      { n: 'Deep squat hold', rx: '60–90s', cue: 'Sit into the bottom of a bodyweight squat. Heels down, chest up, elbows gently push knees out. Best drill for squat depth and pelvic position.' },
+      { n: '90/90 hip rotations', rx: '8 each side', cue: 'Sit on floor, both knees bent at 90° — one leg in front, one to the side. Rotate both knees to the other side keeping chest tall. Trains hip internal and external rotation.' },
+      { n: 'Kneeling hip flexor stretch', rx: '45s each side', cue: 'Kneeling lunge. Tuck tailbone under and feel the stretch in the front of the back hip. The pelvic tuck is the key — without it you barely stretch anything. Main fix for anterior pelvic tilt.' },
+      { n: 'Frog stretch', rx: '60s', cue: 'Hands and knees, knees wide apart. Rock hips back toward heels. Opens the adductors and inner hip. Stay relaxed — breathe and let gravity do the work.' }
+    ]
+  },
+  {
+    label: 'Block 2 — Spine & Shoulders',
+    exercises: [
+      { n: 'Cat-cow', rx: '10 slow reps', cue: 'Hands and knees. Inhale — drop belly, lift chest and tailbone (cow). Exhale — round spine, tuck chin and pelvis (cat). Move slow, feel every segment.' },
+      { n: 'Thoracic rotation', rx: '8 each side', cue: 'Side lying, knees stacked at 90°. Top arm opens to the ceiling, rotate from the mid-back. Hips stay stacked. Feel the rotation in the thoracic spine, not the lumbar.' },
+      { n: 'Wall angels', rx: '2x10 slow', cue: 'Back flat against wall, feet 5cm out, press lower back and back of head into wall throughout. Arms goalpost. Slide up and down keeping elbows and wrists on wall. Go slow — if you lose contact, reset.' }
+    ]
+  },
+  {
+    label: 'Block 3 — Neck',
+    exercises: [
+      { n: 'Chin tucks', rx: '3x10, 3s hold', cue: 'Pull chin straight back — not down — like making a double chin. Hold 3 seconds. Fixes forward head posture and relieves neck tension. You should feel a stretch at the base of skull.' },
+      { n: 'Neck isometrics', rx: '10s each direction', cue: 'Gently press head into hand front, back, left, right. Head does not move — isometric hold. Light pressure, 10 seconds each direction. Don\'t strain.' }
+    ]
+  },
+  {
+    label: 'Block 4 — Light Strength',
+    exercises: [
+      { n: 'Glute bridge', rx: '2x12, 2s hold', cue: 'Squeeze glutes, tuck pelvis at top, don\'t hyperextend the lower back. Hold 2 seconds at top, lower slow.' },
+      { n: 'Single leg RDL', rx: '2x8 each leg', cue: 'Hinge at hip, soft knee, reach back with free leg. Keep back flat. Balance is the challenge, not the weight. Start bodyweight or with a light DB.' },
+      { n: 'Band pull-apart + face pull', rx: '2x15 each', cue: 'Pull apart at chest height, then high to face. Squeeze shoulder blades together at end range. Controls posture and counters internal rotation from pressing.' },
+      { n: 'Dead hang', rx: '2x max hold', cue: 'Hang from a bar, relax the shoulders fully, breathe. Decompresses the spine and builds grip. Stay relaxed — not a flex, a hang.' }
+    ]
+  }
+];
+
+// Flat index helper
+function _mobFlat() {
+  const flat = [];
+  MOBILITY_BLOCKS.forEach((b, bi) => b.exercises.forEach((ex, ei) => flat.push({ex, bi, ei, idx: flat.length})));
+  return flat;
+}
+const MOB_TOTAL = MOBILITY_BLOCKS.reduce((s, b) => s + b.exercises.length, 0);
+
+let _routineMode = 'morning';
+let _mobilityDone = new Array(MOB_TOTAL).fill(false);
+
+function setRoutine(mode) {
+  _routineMode = mode;
+  document.getElementById('rtab-morning').classList.toggle('active', mode === 'morning');
+  document.getElementById('rtab-recovery').classList.toggle('active', mode === 'recovery');
+  document.getElementById('routine-screen-title').textContent = mode === 'morning' ? 'MORNING ROUTINE' : 'RECOVERY';
+  if (mode === 'recovery') {
+    _mobilityDone = new Array(MOB_TOTAL).fill(false);
+    const sb = document.getElementById('morning-streak-badge');
+    if (sb) sb.innerHTML = '';
+  }
+  renderMorning();
+}
+
+function toggleMobExpand(idx) {
+  const flat = _mobFlat();
+  flat.forEach(({idx: i}) => {
+    const b = document.getElementById('mob-body-' + i);
+    const c = document.getElementById('mob-chev-' + i);
+    if (b) b.classList.remove('open');
+    if (c) c.classList.remove('open');
+  });
+  const body = document.getElementById('mob-body-' + idx);
+  const chev = document.getElementById('mob-chev-' + idx);
+  if (body) { body.classList.add('open'); }
+  if (chev) { chev.classList.add('open'); }
+}
+
+function markMobDone(idx) {
+  _mobilityDone[idx] = !_mobilityDone[idx];
+  renderMorning();
+  if (_mobilityDone[idx]) {
+    const next = _mobilityDone.findIndex((v, i) => i > idx && !v);
+    if (next >= 0) {
+      setTimeout(() => {
+        const b = document.getElementById('mob-body-' + next);
+        const c = document.getElementById('mob-chev-' + next);
+        const card = document.getElementById('mob-card-' + next);
+        if (b) b.classList.add('open');
+        if (c) c.classList.add('open');
+        if (card) card.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      }, 200);
+    }
+  }
+}
+
+function resetMobility() {
+  _mobilityDone = new Array(MOB_TOTAL).fill(false);
+  renderMorning();
+}
+
+function renderMobility() {
+  const done = _mobilityDone.filter(Boolean).length;
+  const allDone = done === MOB_TOTAL;
+  const pct = Math.round((done / MOB_TOTAL) * 100);
+
+  // Progress bar
+  const pa = document.getElementById('mob-progress-area');
+  if (pa) {
+    pa.innerHTML = `<div class="mob-progress-wrap">
+      <div class="mob-progress-track"><div class="mob-progress-fill" style="width:${pct}%"></div></div>
+      <div class="mob-progress-label">${done} / ${MOB_TOTAL} complete</div>
+    </div>`;
+  }
+
+  let h = '';
+  if (allDone) {
+    h += `<div class="mob-all-done">
+      <div class="check">✅</div>
+      <div class="msg">Recovery done.</div>
+      <div class="sub">Full body mobility complete</div>
+      <button class="mob-reset-btn" onclick="resetMobility()">Start again</button>
+    </div>`;
+  }
+
+  const flat = _mobFlat();
+  let lastBi = -1;
+  flat.forEach(({ex, bi, idx}) => {
+    if (bi !== lastBi) {
+      h += `<div class="mob-block-hdr">${escH(MOBILITY_BLOCKS[bi].label)}</div>`;
+      lastBi = bi;
+    }
+    const isDone = _mobilityDone[idx];
+    h += `<div class="mex-card${isDone ? ' done' : ''}" id="mob-card-${idx}">
+      <div class="mex-header" onclick="toggleMobExpand(${idx})">
+        <div class="mex-check">${isDone ? '✓' : ''}</div>
+        <div class="mex-info">
+          <div class="mex-name">${escH(ex.n)}</div>
+          <div class="mex-rx">${escH(ex.rx)}</div>
+        </div>
+        <div class="mex-chevron" id="mob-chev-${idx}">▼</div>
+      </div>
+      <div class="mex-body" id="mob-body-${idx}">
+        <div class="mex-cue">${escH(ex.cue)}</div>
+        <button class="${isDone ? 'mex-done-btn undone' : 'mex-done-btn'}" onclick="markMobDone(${idx})">
+          ${isDone ? '✓ Undo' : 'DONE'}
+        </button>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('morning-body').innerHTML = h;
+
+  if (!allDone) {
+    const firstUndone = _mobilityDone.findIndex(v => !v);
+    if (firstUndone >= 0) {
+      const b = document.getElementById('mob-body-' + firstUndone);
+      const c = document.getElementById('mob-chev-' + firstUndone);
+      if (b && !b.classList.contains('open')) { b.classList.add('open'); if (c) c.classList.add('open'); }
+    }
+  }
+}
+
 // ─── MORNING ROUTINE ────────────────────────────────────────────────
 const MORNING_EXERCISES = [
   {
@@ -3701,10 +3886,14 @@ function markMorningDone(idx) {
 }
 
 function renderMorning() {
+  if (_routineMode === 'recovery') { renderMobility(); return; }
   const key = todayKey();
   const ms = getMorningState(key);
   const streak = getMorningStreak();
+  const pa = document.getElementById('mob-progress-area');
+  if (pa) pa.innerHTML = '';
 
+  document.getElementById('routine-screen-title').textContent = 'MORNING ROUTINE';
   // Update date label
   const d = new Date();
   document.getElementById('morning-date-label').textContent =
