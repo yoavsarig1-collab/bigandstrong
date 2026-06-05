@@ -1308,8 +1308,8 @@ html.theme-light .gts-btn.active { color: #fff; }
     <div id="morning-streak-badge"></div>
   </div>
   <div class="routine-tabs">
-    <button class="rtab active" id="rtab-morning" onclick="setRoutine('morning')">Morning</button>
-    <button class="rtab" id="rtab-recovery" onclick="setRoutine('recovery')">Recovery</button>
+    <button class="rtab active" id="rtab-recovery" onclick="setRoutine('recovery')">Mobility</button>
+    <button class="rtab" id="rtab-morning" onclick="setRoutine('morning')">Morning</button>
   </div>
   <div id="mob-progress-area"></div>
   <div class="morning-body" id="morning-body"></div>
@@ -1322,8 +1322,8 @@ html.theme-light .gts-btn.active { color: #fff; }
     <div class="nav-label">Log</div>
   </button>
   <button class="nav-btn" id="nav-morning" onclick="showScreen('morning')">
-    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></div>
-    <div class="nav-label">Morning</div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+    <div class="nav-label">Recovery</div>
   </button>
   <button class="nav-btn" id="nav-analysis" onclick="showScreen('analysis')">
     <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
@@ -3665,14 +3665,14 @@ function _mobFlat() {
 }
 const MOB_TOTAL = MOBILITY_BLOCKS.reduce((s, b) => s + b.exercises.length, 0);
 
-let _routineMode = 'morning';
+let _routineMode = 'recovery';
 let _mobilityDone = new Array(MOB_TOTAL).fill(false);
 
 function setRoutine(mode) {
   _routineMode = mode;
   document.getElementById('rtab-morning').classList.toggle('active', mode === 'morning');
   document.getElementById('rtab-recovery').classList.toggle('active', mode === 'recovery');
-  document.getElementById('routine-screen-title').textContent = mode === 'morning' ? 'MORNING ROUTINE' : 'RECOVERY';
+  document.getElementById('routine-screen-title').textContent = mode === 'morning' ? 'MORNING ROUTINE' : 'MOBILITY';
   if (mode === 'recovery') {
     _mobilityDone = new Array(MOB_TOTAL).fill(false);
     const sb = document.getElementById('morning-streak-badge');
@@ -3894,6 +3894,8 @@ function renderMorning() {
   if (pa) pa.innerHTML = '';
 
   document.getElementById('routine-screen-title').textContent = 'MORNING ROUTINE';
+  document.getElementById('rtab-morning').classList.add('active');
+  document.getElementById('rtab-recovery').classList.remove('active');
   // Update date label
   const d = new Date();
   document.getElementById('morning-date-label').textContent =
