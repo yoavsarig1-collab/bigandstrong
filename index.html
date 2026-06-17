@@ -414,6 +414,12 @@ body{display:flex;flex-direction:column;}
 .analysis-content{flex:1;overflow-y:auto;padding:16px;}
 .analysis-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
 .analysis-card-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--accent);margin-bottom:8px;}
+.qual-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border2);}
+.qual-row:last-child{border-bottom:none;}
+.qual-name{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);flex:1;}
+.qual-dots{display:flex;gap:2px;font-size:12px;flex-shrink:0;}
+.qual-count{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;min-width:52px;text-align:right;flex-shrink:0;}
+.qual-target{font-size:10px;color:var(--muted);font-weight:400;}
 .analysis-text{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;}
 .empty-state{text-align:center;padding:48px 24px;color:var(--muted);font-size:14px;line-height:1.8;}
 .empty-state .big{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--border2);display:block;margin-bottom:8px;}
@@ -1428,7 +1434,7 @@ html.theme-light .gts-btn.active { color: #fff; }
 <script>
 // ─── DEFAULT PLAN ───────────────────────────────────────────────────
 const DEFAULT_DAYS = [
-  { key:'sun', short:'Sun', label:'Lower power', exercises:[
+  { key:'sun', short:'Sun', label:'Lower power', qualities:['power','plyometric','strength'], exercises:[
     { n:'Pogo hops', s:'3×10', base:'Bodyweight', note:'Stay on balls of feet, minimal ground contact time, small quick hops. Trains ankle stiffness and reactive power.' },
     { n:'Vertical jump', s:'3×3', base:'Bodyweight', note:'Max height, full reset between reps' },
     { n:'Depth drop', s:'3×3', base:'Bodyweight', note:'Step off a low step or kerb. Focus entirely on soft quiet landing — absorb through ankle, knee, hip. This is landing mechanics training.' },
@@ -1437,26 +1443,26 @@ const DEFAULT_DAYS = [
     { n:'Leg curl / Nordic', s:'1-2×8-10', base:'30–40 kg', note:'Slow eccentric — 3-4s down.' },
     { n:'Calf + tib raise', s:'1-2×12-15', base:'Bodyweight', note:'Single-leg right side. Full range both directions.' },
   ]},
-  { key:'mon', short:'Mon', label:'Upper strength', exercises:[
+  { key:'mon', short:'Mon', label:'Upper strength', qualities:['strength'], exercises:[
     { n:'Bench press / incline', s:'1-2×4-6', base:'70–80 kg', note:'Tuck elbows if neck sensitive. Controlled descent.' },
     { n:'Weighted pull-up', s:'1-2×4-6', base:'+5–10 kg', note:'Or park bar bodyweight. Full hang at bottom.' },
     { n:'Seated row', s:'1-2×6-8', base:'60–70 kg', note:'Chest-supported if available. Drive elbows back.' },
     { n:'Face pull / rear delt fly', s:'1-2×12-15', base:'10–15 kg', note:'Scap retraction focus. High elbows.' },
     { n:'Forearm / grip work', s:'3 sets', base:'Pick one', note:'Dead hang 3×max hold, OR Plate pinch hold 3×30s, OR DB wrist curls 3×15. Grip training — tack on at end of session, ~5 min.', optional:true },
   ]},
-  { key:'tue', short:'Tue', label:'Zone 2 + core', exercises:[
+  { key:'tue', short:'Tue', label:'Zone 2 + core', qualities:['aerobic'], exercises:[
     { n:'Easy run (Zone 2)', s:'30–40 min', base:'Bodyweight', note:'Conversational pace — you should be able to hold a sentence. Nasal breathing preferred.', type:'run' },
     { n:'Side plank', s:'2×20-30s/side', base:'Bodyweight', note:'Stack feet or stagger. Keep hips high.', type:'timed' },
     { n:'Dead bug', s:'2×10', base:'Bodyweight', note:'Press lower back into floor the entire time. Move slow.' },
     { n:'Hollow body hold', s:'2×20-30s', base:'Bodyweight', note:'Arms overhead, legs low, lower back pressed down.', type:'timed' },
   ]},
-  { key:'wed', short:'Wed', label:'Lower shape', exercises:[
+  { key:'wed', short:'Wed', label:'Lower shape', qualities:['strength','hypertrophy'], exercises:[
     { n:'Single leg RDL', s:'1-2×8/leg', base:'12–16 kg DB', note:'Hinge at hip, soft knee, weight close to leg, feel hamstring load. Light DB to start — balance is the challenge not weight. Trains gait stability and hip control.' },
     { n:'Bulgarian split squat', s:'1-2×8/leg', base:'BW or 8–12 kg', note:'Rear foot elevated. Knee tracks over toes.' },
     { n:'Hip thrust', s:'1-2×8-10', base:'80–100 kg', note:'Squeeze glutes at top, tuck pelvis, full hip extension.' },
     { n:'Single-leg calf raise', s:'1-2×15/leg', base:'Bodyweight', note:'Full range — bottom stretch to tip-toe top.' },
   ]},
-  { key:'thu', short:'Thu', label:'Upper hypertrophy', exercises:[
+  { key:'thu', short:'Thu', label:'Upper hypertrophy', qualities:['strength','hypertrophy'], exercises:[
     { n:'Incline DB press', s:'1-2×8-10', base:'20–24 kg DBs', note:'30–45° angle. Controlled at bottom.' },
     { n:'Lat pulldown', s:'1-2×8-10', base:'60–70 kg', note:'Wide grip. Pull bar to upper chest, lean back slightly.' },
     { n:'Lateral raise', s:'2×12-15', base:'6–8 kg DBs', note:'Slight forward lean, lead with elbow.' },
@@ -1464,7 +1470,7 @@ const DEFAULT_DAYS = [
     { n:'Rear delt row', s:'1-2×12-15', base:'10–12 kg', note:'Chest support, elbows flared wide.' },
     { n:'Forearm / grip work', s:'3 sets', base:'Pick one', note:'Dead hang 3×max hold, OR Plate pinch hold 3×30s, OR DB wrist curls 3×15. Grip training — tack on at end of session, ~5 min.', optional:true },
   ]},
-  { key:'fri', short:'Fri', label:'Speed + power', exercises:[
+  { key:'fri', short:'Fri', label:'Speed + power', qualities:['power','plyometric'], exercises:[
     { n:'Sprint 6-8×15-20s', s:'6-8 runs', base:'Bodyweight', note:'40–60% effort — controlled, not maximal. 2 min walk between. Focus on mechanics.', type:'run' },
     { n:'Broad jump + box jump', s:'3×3 each', base:'Bodyweight', note:'Add from week 4-5 only — when ankle feel is 4+ for two consecutive weeks. Use bench or low wall for box jumps.' },
     { n:'Ankle circles + calf stretch', s:'1 min/leg', base:'Bodyweight', note:'Slow circles both directions. Deep calf stretch with straight and bent knee.', type:'timed' },
@@ -1764,6 +1770,11 @@ function loadState() {
   if (!state.planV || state.planV < 3) {
     state.days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
     state.planV = 3;
+  }
+  if (state.planV < 4) {
+    const _qmap = {sun:['power','plyometric','strength'],mon:['strength'],tue:['aerobic'],wed:['strength','hypertrophy'],thu:['strength','hypertrophy'],fri:['power','plyometric']};
+    state.days.forEach(D => { if (!D.qualities) D.qualities = _qmap[D.key] || []; });
+    state.planV = 4;
   }
   if (!state.sessions) state.sessions = {};
   if (!state.analyses) state.analyses = {};
@@ -2784,6 +2795,58 @@ function buildDataSummary() {
   return lines.length ? lines.join('\n') : 'No session data logged for this week yet.';
 }
 
+const QUALITY_INFO = {
+  power:       { label: 'Power / CNS',      freqMin: 1, freqMax: 2 },
+  plyometric:  { label: 'Plyometric',       freqMin: 1, freqMax: 2 },
+  lactic:      { label: 'Anaerobic lactic', freqMin: 1, freqMax: 2 },
+  aerobic:     { label: 'Aerobic / Zone 2', freqMin: 3, freqMax: 5 },
+  strength:    { label: 'Strength',         freqMin: 2, freqMax: 4 },
+  hypertrophy: { label: 'Hypertrophy',      freqMin: 2, freqMax: 4 },
+};
+
+function weekDayHasData(w, dk) {
+  const pfx = 'w' + w + '_' + dk + '_';
+  return Object.keys(state.sessions).some(k => k.startsWith(pfx));
+}
+
+function renderQualityTracker() {
+  const qualDays = {};
+  state.days.forEach(D => {
+    (D.qualities || []).forEach(q => {
+      if (!qualDays[q]) qualDays[q] = [];
+      qualDays[q].push(D.key);
+    });
+  });
+  const ORDER = ['power','plyometric','lactic','aerobic','strength','hypertrophy'];
+  const qualities = ORDER.filter(q => qualDays[q]);
+  if (!qualities.length) return '';
+
+  const startW = Math.max(1, week - 3);
+  const rows = qualities.map(q => {
+    const info = QUALITY_INFO[q];
+    const days = qualDays[q];
+    const thisWeek = days.filter(dk => weekDayHasData(week, dk)).length;
+    let dots = '';
+    for (let w2 = startW; w2 <= week; w2++) {
+      const hit = days.some(dk => weekDayHasData(w2, dk));
+      dots += `<span style="color:${hit ? 'var(--accent)' : 'var(--border2)'}">●</span>`;
+    }
+    const inRange = thisWeek >= info.freqMin;
+    const countCol = thisWeek === 0 ? 'var(--muted)' : inRange ? 'var(--accent)' : 'var(--accent2)';
+    return `<div class="qual-row">
+      <div class="qual-name">${info.label}</div>
+      <div class="qual-dots">${dots}</div>
+      <div class="qual-count" style="color:${countCol}">${thisWeek}<span class="qual-target">/${info.freqMin}-${info.freqMax}×</span></div>
+    </div>`;
+  });
+
+  return `<div class="analysis-card" style="margin-bottom:16px">
+    <div class="analysis-card-title">TRAINING SYSTEMS — W${week}</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;letter-spacing:0.3px">sessions logged this week · ● = trained (last 4 weeks)</div>
+    ${rows.join('')}
+  </div>`;
+}
+
 function renderVolumeChart() {
   const weekVols = [];
   let maxVol = 0;
@@ -2822,16 +2885,17 @@ function renderAnalysis() {
   const body = document.getElementById('analysis-body');
   const analyses = Object.values(state.analyses||{}).sort((a,b)=>b.week-a.week);
   const chartHtml = renderVolumeChart();
+  const qualHtml = renderQualityTracker();
 
   if (!analyses.length) {
-    body.innerHTML = (chartHtml || '') + `<div class="empty-state">
+    body.innerHTML = qualHtml + (chartHtml || '') + `<div class="empty-state">
       <span class="big">NO ANALYSIS YET</span>
       Log a few sessions then tap "⚡ Get AI Analysis" in the Log tab.
     </div>`;
     return;
   }
 
-  body.innerHTML = chartHtml + analyses.map(a => {
+  body.innerHTML = qualHtml + chartHtml + analyses.map(a => {
     const d = new Date(a.date);
     const dateStr = d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
     return `<div class="analysis-card">
