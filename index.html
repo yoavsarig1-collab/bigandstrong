@@ -2178,7 +2178,7 @@ function renderSetRows(w, dk, i, ex) {
         <input class="set-w-inp" type="text" inputmode="decimal" placeholder="${escH(wph)}"
           value="${escH(wv)}" onchange="sv(${w},'${dk}',${i},'w${s}',this.value)">
         <input class="set-v-inp" type="number" inputmode="numeric" placeholder="reps" min="1" max="999"
-          value="${escH(rv)}" onchange="sv(${w},'${dk}',${i},'s${s}',this.value)" onblur="if(this.value)startRest(_restDefault)">
+          value="${escH(rv)}" onchange="sv(${w},'${dk}',${i},'s${s}',this.value);if(this.value)copySetToNext(${w},'${dk}',${i},${s})" onblur="if(this.value)startRest(_restDefault)">
         <input class="set-rpe-inp" type="number" inputmode="decimal" placeholder="RPE" min="6" max="10" step="0.5"
           value="${escH(rpeV)}" onchange="sv(${w},'${dk}',${i},'rpe${s}',this.value)">
         ${count > 1 ? `<button class="del-set-btn" onclick="removeSet(${w},'${dk}',${i},${s})">−</button>` : ''}
@@ -2196,6 +2196,18 @@ function renderSetRows(w, dk, i, ex) {
     }
   }
   return html;
+}
+
+function copySetToNext(w, dk, i, s) {
+  const sc = getSetCount(w, dk, i, {s:''});
+  const n = s + 1;
+  if (n >= sc) return;
+  if (gv(w, dk, i, 'w' + n) || gv(w, dk, i, 's' + n)) return;
+  const curW = getSetWeightVal(w, dk, i, s);
+  const curR = gv(w, dk, i, 's' + s);
+  if (curW) sv(w, dk, i, 'w' + n, curW);
+  if (curR) sv(w, dk, i, 's' + n, curR);
+  setTimeout(renderLogBody, 0);
 }
 
 function addSet(w, dk, i) {
