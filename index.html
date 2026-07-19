@@ -3106,9 +3106,29 @@ function exportJSON() {
     sessions: state.sessions,
     analyses: state.analyses
   };
+  const json = JSON.stringify(exportData, null, 2);
+  const filename = `training_log_week${week}_${new Date().toISOString().slice(0,10)}.json`;
+  // iOS share sheet with file — lets user save to Files, AirDrop, Notes etc.
+  if (navigator.canShare) {
+    const file = new File([json], filename, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Training Log Backup' }).catch(() => {});
+      return;
+    }
+  }
+  // Fallback: copy full JSON to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(json)
+      .then(() => showToast('JSON copied to clipboard — paste into a text file'))
+      .catch(() => _exportDownload(json, filename));
+    return;
+  }
+  _exportDownload(json, filename);
+}
+function _exportDownload(json, filename) {
   const a = document.createElement('a');
-  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
-  a.download = `training_log_week${week}_${new Date().toISOString().slice(0,10)}.json`;
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   showToast('JSON exported ✓');
 }
