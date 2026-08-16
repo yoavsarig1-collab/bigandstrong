@@ -1663,7 +1663,7 @@ function showExHistory(dk, exIdx) {
   // Collect per-week max weight
   const data = [];
   let allTimeMax = 0;
-  for (let w = 1; w <= 16; w++) {
+  for (let w = 1; w <= MAX_WEEK; w++) {
     const sc = getSetCount(w, dk, exIdx, ex);
     let maxW = 0;
     let bestR = '';
@@ -1756,6 +1756,7 @@ function addCustomAlt() {
 // ─── STATE ──────────────────────────────────────────────────────────
 const SK = 'tlog_v3';
 let state = {};
+const MAX_WEEK = 52;
 let week = 3, dayIdx = 0;
 let editTarget = null; // {dayKey, exIdx}
 let currentScreen = 'log';
@@ -1862,7 +1863,7 @@ function getCurrentWeek() {
   const start = state.prefs && state.prefs.startDate;
   if (!start) return 3;
   const ms = Date.now() - new Date(start).getTime();
-  return Math.max(1, Math.min(16, Math.floor(ms / (7*24*60*60*1000)) + 1));
+  return Math.max(1, Math.min(MAX_WEEK, Math.floor(ms / (7*24*60*60*1000)) + 1));
 }
 function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -1905,15 +1906,15 @@ function updateDateLabel() {
 
 // ─── WEEK NAV ───────────────────────────────────────────────────────
 function chWeek(d) {
-  week = Math.max(1, Math.min(16, week+d));
-  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  week = Math.max(1, Math.min(MAX_WEEK, week+d));
+  document.getElementById('wlabel').textContent = 'W'+week;
   updateDateLabel();
   updateWeekBar();
   renderLog();
 }
 function jumpToNow() {
   week = getCurrentWeek();
-  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  document.getElementById('wlabel').textContent = 'W'+week;
   updateDateLabel();
   updateWeekBar();
   renderLog();
@@ -2862,7 +2863,7 @@ function renderQualityTracker() {
 function renderVolumeChart() {
   const weekVols = [];
   let maxVol = 0;
-  for (let w = 1; w <= 16; w++) {
+  for (let w = 1; w <= MAX_WEEK; w++) {
     let total = 0;
     state.days.forEach(D => { total += calcVolume(w, D.key); });
     weekVols.push({w, vol: total});
@@ -3032,7 +3033,7 @@ function savePrefs() {
   state.prefs.startDate = document.getElementById('pref-startdate').value;
   persist();
   week = getCurrentWeek();
-  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  document.getElementById('wlabel').textContent = 'W'+week;
   updateWeekBar();
   renderLog();
   showToast('Preferences saved ✓');
@@ -3135,7 +3136,7 @@ function _exportDownload(json, filename) {
 
 function exportCSV() {
   const rows = [['Week','Day','Exercise','Weight','Reps','Notes','Swapped from','Ankle feel']];
-  for (let w=1; w<=16; w++) {
+  for (let w=1; w<=MAX_WEEK; w++) {
     const ankle = state.sessions[`ankle_w${w}`] || '';
     let firstRow = true;
     state.days.forEach(D => {
@@ -3193,7 +3194,7 @@ function importJSON() {
   if (parsed.analyses) state.analyses = parsed.analyses;
   if (parsed.currentWeek) week = parsed.currentWeek;
   persist();
-  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  document.getElementById('wlabel').textContent = 'W'+week;
   updateWeekBar();
   renderLog();
   document.getElementById('import-area').style.display = 'none';
@@ -3596,7 +3597,7 @@ function applyRestoredData(data) {
   }
   if (data.currentWeek) week = data.currentWeek;
   persist();
-  document.getElementById('wlabel').textContent = 'W'+week+'/16';
+  document.getElementById('wlabel').textContent = 'W'+week;
   updateWeekBar();
   renderLog();
 }
