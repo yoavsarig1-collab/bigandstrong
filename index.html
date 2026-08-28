@@ -914,7 +914,6 @@ function renderResume() {
 // ═══ GENERATE + PREVIEW ════════════════════════════════════════════════════
 let _preview=null;
 function onBuild() {
-  if (state.active) { showScreen('session'); return; }
   _preview=generateSession(state.builder);
   renderPreview();
   document.getElementById('preview-overlay').classList.add('open');
@@ -954,6 +953,9 @@ function closePreview(e) {
 }
 function startFromPreview() {
   if (!_preview) return;
+  if (state.active && calcSets(state.active)>0) {
+    if (!confirm('You have a session in progress with logged sets. Discard it and start this one?')) return;
+  }
   const g=GOALS[_preview.goal];
   document.getElementById('preview-overlay').classList.remove('open');
   const exercises=_preview.exercises.map(ex=>{
