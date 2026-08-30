@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Caveat:wght@500;600&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; }
+    a { color: #a8632f; } a:hover { color: #814824; }
+    @keyframes drift-a { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-14px,0) scale(1.015); } }
+    @keyframes breathe-a { 0%,100% { opacity: .5; } 50% { opacity: .85; } }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 1080px; height: 1350px; overflow: hidden; background:
+     radial-gradient(120% 90% at 50% 118%, #e8b785 0%, #eccfa6 22%, #f0e2cb 46%, #f4ecdc 68%, #f6f1e6 100%);">
+
+  <!-- soft rising sun glow -->
+  <div style="position: absolute; left: 50%; bottom: -260px; width: 900px; height: 900px; transform: translateX(-50%);
+       background: radial-gradient(circle, rgba(233,170,109,0.55) 0%, rgba(233,170,109,0.18) 42%, rgba(233,170,109,0) 68%);
+       animation: breathe-a 11s ease-in-out infinite;"></div>
+
+  <!-- topographic contour rings -->
+  <svg viewBox="0 0 1080 1350" width="1080" height="1350" style="position: absolute; inset: 0; animation: drift-a 16s ease-in-out infinite;">
+    <g fill="none" stroke="#c07b45" stroke-width="1.4" opacity="0.32">
+      <ellipse cx="540" cy="1120" rx="250" ry="120"/>
+      <ellipse cx="540" cy="1120" rx="360" ry="176"/>
+      <ellipse cx="540" cy="1120" rx="474" ry="236"/>
+      <ellipse cx="540" cy="1120" rx="592" ry="300"/>
+      <ellipse cx="540" cy="1120" rx="712" ry="368"/>
+      <ellipse cx="540" cy="1120" rx="836" ry="440"/>
+    </g>
+  </svg>
+
+  <!-- grain -->
+  <svg width="1080" height="1350" style="position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: multiply; pointer-events: none;">
+    <filter id="grainA"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>
+    <rect width="100%" height="100%" filter="url(#grainA)"/>
+  </svg>
+
+  <!-- content -->
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 104px 108px 96px;">
+
+    <!-- pause cue (shared motif) -->
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #b06a34;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #b06a34; opacity: .55;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #b06a34; opacity: .3;"></span>
+    </div>
+
+    <div style="font-family: 'Josefin Sans', sans-serif; font-weight: 400; font-size: 27px; letter-spacing: 0.42em;
+         text-transform: uppercase; color: #9a5a2c; margin-top: 40px;">on&nbsp;&nbsp;time</div>
+
+    <!-- curved headline on an arc -->
+    <svg viewBox="0 0 900 300" width="864" style="margin-top: 26px; overflow: visible;">
+      <path id="arcA" d="M 40 232 Q 450 92 860 232" fill="none"/>
+      <text text-anchor="middle" style="font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 500; font-style: italic; font-size: 104px; fill: #33241a;">
+        <textPath href="#arcA" startOffset="50%">We are not late.</textPath>
+      </text>
+    </svg>
+
+    <!-- body with key-letter emphasis for fast reading -->
+    <p style="margin: 0; margin-top: 8px; max-width: 720px; font-size: 46px; line-height: 1.92; letter-spacing: 0.015em; color: #4a3a2c;">
+      <b>We</b> <b>th</b>ink <b>we</b> <b>a</b>re <b>cha</b>sing <b>t</b>he <b>d</b>ay. <b>B</b>ut <b>t</b>he <b>d</b>ay <b>i</b>s <b>a</b> <b>ri</b>ver&nbsp;&mdash; <b>a</b>nd <b>we</b> <b>a</b>re <b>t</b>he <b>o</b>nes <b>st</b>ill <b>st</b>anding <b>o</b>n <b>t</b>he <b>ba</b>nk, <b>d</b>ry, <b>afr</b>aid <b>t</b>o <b>st</b>ep <b>i</b>n.
+    </p>
+
+    <div style="flex-grow: 1;"></div>
+
+    <!-- signature (shared brand mark) -->
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="#b06a34" stroke-width="2" stroke-linecap="round">
+        <path d="M26 46 C 26 30, 26 22, 26 10"/>
+        <path d="M26 24 C 14 22, 8 15, 8 6 C 18 7, 25 13, 26 24Z" fill="#b06a34" fill-opacity="0.14"/>
+        <path d="M26 30 C 38 28, 44 21, 44 12 C 34 13, 27 19, 26 30Z" fill="#b06a34" fill-opacity="0.1"/>
+      </svg>
+      <span style="font-family: 'Caveat', cursive; font-size: 68px; color: #8f5227; line-height: 1;">yoav</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

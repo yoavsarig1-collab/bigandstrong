@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;1,400&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'EB Garamond', Georgia, serif; }
+    a { color: #7c6f52; } a:hover { color: #5d5340; }
+    @keyframes mote { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .7; } 85% { opacity: .7; } 100% { transform: translateY(-120px); opacity: 0; } }
+    @keyframes sway-d { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 1080px; height: 1350px; overflow: hidden; background:
+     radial-gradient(115% 90% at 78% 22%, #fbf8f1 0%, #f6f1e6 40%, #efe8d6 72%, #e9e0cb 100%);">
+
+  <!-- faint field-horizon wash -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 460px;
+       background: linear-gradient(to top, rgba(206,196,164,0.5), rgba(206,196,164,0));"></div>
+
+  <!-- drifting motes (dynamic) -->
+  <div style="position: absolute; left: 180px; bottom: 300px; width: 7px; height: 7px; border-radius: 50%; background: #b9a878; animation: mote 9s ease-in-out infinite;"></div>
+  <div style="position: absolute; left: 420px; bottom: 240px; width: 5px; height: 5px; border-radius: 50%; background: #b9a878; animation: mote 11s ease-in-out infinite 1.5s;"></div>
+  <div style="position: absolute; left: 720px; bottom: 360px; width: 6px; height: 6px; border-radius: 50%; background: #b9a878; animation: mote 10s ease-in-out infinite 3s;"></div>
+  <div style="position: absolute; left: 880px; bottom: 280px; width: 4px; height: 4px; border-radius: 50%; background: #b9a878; animation: mote 12s ease-in-out infinite 4.5s;"></div>
+
+  <!-- single thin sprig, upper area, gentle sway -->
+  <svg width="220" height="330" viewBox="0 0 220 330" style="position: absolute; right: 96px; top: 118px; transform-origin: 40px 320px; animation: sway-d 10s ease-in-out infinite;">
+    <g fill="none" stroke="#a99a6f" stroke-width="1.8" stroke-linecap="round" opacity="0.65">
+      <path d="M46 320 C 70 230, 96 150, 150 24"/>
+      <path d="M120 108 C 150 92, 176 96, 190 116"/>
+      <path d="M108 152 C 82 138, 58 144, 46 164"/>
+      <path d="M132 66 C 160 52, 184 58, 196 78"/>
+    </g>
+    <g fill="#a99a6f" fill-opacity="0.28">
+      <ellipse cx="184" cy="112" rx="17" ry="8" transform="rotate(-24 184 112)"/>
+      <ellipse cx="52" cy="160" rx="17" ry="8" transform="rotate(20 52 160)"/>
+      <ellipse cx="190" cy="74" rx="15" ry="7" transform="rotate(-28 190 74)"/>
+    </g>
+  </svg>
+
+  <!-- grain -->
+  <svg width="1080" height="1350" style="position: absolute; inset: 0; opacity: 0.05; mix-blend-mode: multiply; pointer-events: none;">
+    <filter id="grainD"><feTurbulence type="fractalNoise" baseFrequency="0.92" numOctaves="2" stitchTiles="stitch"/></filter>
+    <rect width="100%" height="100%" filter="url(#grainD)"/>
+  </svg>
+
+  <!-- content -->
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 118px 108px 96px;">
+
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #8a7c58;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #8a7c58; opacity: .55;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #8a7c58; opacity: .3;"></span>
+    </div>
+
+    <div style="font-family: 'EB Garamond', serif; font-size: 27px; letter-spacing: 0.44em;
+         text-transform: uppercase; color: #8a7c58; margin-top: 44px;">on&nbsp;&nbsp;stillness</div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <!-- one big tilted thought (not straight) -->
+    <div style="transform: rotate(-4deg); transform-origin: left center; font-family: 'Playfair Display', Georgia, serif;
+         font-weight: 500; font-size: 130px; line-height: 1.0; color: #2e2a1f; letter-spacing: 0.005em;">
+      Be a field,<br>
+      <span style="font-style: italic; color: #7c6f52;">not a race.</span>
+    </div>
+
+    <p style="margin: 0; margin-top: 78px; max-width: 660px; font-family: 'EB Garamond', serif;
+         font-size: 46px; line-height: 1.86; letter-spacing: 0.014em; color: #4c4636;">
+      <b>A</b> <b>fi</b>eld <b>d</b>oes <b>n</b>ot <b>hu</b>rry <b>t</b>he <b>sp</b>ring. <b>I</b>t <b>si</b>mply <b>st</b>ays <b>o</b>pen, <b>a</b>nd <b>l</b>ets <b>t</b>he <b>se</b>ason <b>d</b>o <b>i</b>ts <b>sl</b>ow, <b>ce</b>rtain <b>w</b>ork.
+    </p>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="#8a7c58" stroke-width="2" stroke-linecap="round">
+        <path d="M26 46 C 26 30, 26 22, 26 10"/>
+        <path d="M26 24 C 14 22, 8 15, 8 6 C 18 7, 25 13, 26 24Z" fill="#8a7c58" fill-opacity="0.16"/>
+        <path d="M26 30 C 38 28, 44 21, 44 12 C 34 13, 27 19, 26 30Z" fill="#8a7c58" fill-opacity="0.12"/>
+      </svg>
+      <span style="font-family: 'Caveat', cursive; font-size: 68px; color: #7c6f52; line-height: 1;">yoav</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

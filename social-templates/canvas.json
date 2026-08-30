@@ -1,0 +1,16 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",  "x": 0,    "y": 0,    "w": 1080, "h": 1350, "title": "Horizon" },
+    { "file": "Grove.dc.html", "x": 1240, "y": 0,    "w": 1080, "h": 1350, "title": "Grove" },
+    { "file": "Tide.dc.html",  "x": 0,    "y": 1660, "w": 1080, "h": 1350, "title": "Tide" },
+    { "file": "Field.dc.html", "x": 1240, "y": 1660, "w": 1080, "h": 1350, "title": "Field" }
+  ],
+  "annotations": [
+    { "id": "intro", "x": 0, "y": -300, "w": 2320, "text": "Yoav — social templates for Instagram & Facebook (4:5, 1080×1350).\nShared language across all four: the three fading dots (a 'pause / breathe' cue), key-letter emphasis for fast reading, letters given air, text that never sits perfectly straight, a nature ground, and the same hand-signed 'yoav' leaf mark — so a reader recognizes it's yours before reading a word. Each style differs so a feed stays diverse. The writing shown is sample copy — swap it for your own by clicking the text." },
+    { "id": "n-horizon", "x": 60, "y": -150, "w": 900, "text": "HORIZON — warm sand, rising-sun glow, topographic contour rings. Cormorant Garamond italic on an arc. Calm, literary, hopeful. Best for a gentle turn or reassurance." },
+    { "id": "n-grove", "x": 1300, "y": -150, "w": 900, "text": "GROVE — sage green, swaying botanicals. Marcellus headline set in stepped, offset lines; Work Sans body. Grounded and alive. Best for a clear idea you want to land." },
+    { "id": "n-tide", "x": 60, "y": 1500, "w": 900, "text": "TIDE — dusk palette, drifting tide lines. Spectral italic riding a wave. Darker, weightier — 'this is important, slow down.' Best for depth, loss, courage." },
+    { "id": "n-field", "x": 1300, "y": 1500, "w": 900, "text": "FIELD — airiest and most minimal. Playfair Display, one big tilted thought, drifting motes, a single sprig. Poster-quiet. Best for a single line that should breathe." }
+  ],
+  "launch": { "view": "canvas" }
+}

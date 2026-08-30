@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=Work+Sans:wght@300;400&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: 'Spectral', Georgia, serif; }
+    a { color: #e7c48a; } a:hover { color: #f2d6a4; }
+    @keyframes tide-1 { 0% { transform: translateX(0); } 100% { transform: translateX(-160px); } }
+    @keyframes tide-2 { 0% { transform: translateX(0); } 100% { transform: translateX(140px); } }
+    @keyframes glow-c { 0%,100% { opacity: .55; } 50% { opacity: .9; } }
+  </style>
+</helmet>
+
+<div style="position: relative; width: 1080px; height: 1350px; overflow: hidden; background:
+     linear-gradient(178deg, #16232e 0%, #1b2c37 30%, #223642 55%, #2c4149 78%, #37505199 100%),
+     radial-gradient(90% 60% at 50% 105%, #6a5a74 0%, #2c4149 55%, #16232e 100%);">
+
+  <!-- dusk horizon glow -->
+  <div style="position: absolute; left: 50%; bottom: -220px; width: 1000px; height: 700px; transform: translateX(-50%);
+       background: radial-gradient(circle, rgba(211,153,120,0.5) 0%, rgba(150,120,140,0.25) 40%, rgba(150,120,140,0) 70%);
+       animation: glow-c 12s ease-in-out infinite;"></div>
+
+  <!-- flowing tide lines -->
+  <svg viewBox="0 0 1400 400" width="1400" height="400" preserveAspectRatio="none" style="position: absolute; left: -160px; bottom: 60px; opacity: 0.5; animation: tide-1 24s linear infinite;">
+    <g fill="none" stroke="#7fa6ad" stroke-width="2">
+      <path d="M0 200 C 175 120, 350 280, 525 200 S 875 120, 1050 200 S 1400 280, 1400 200"/>
+      <path d="M0 260 C 175 180, 350 340, 525 260 S 875 180, 1050 260 S 1400 340, 1400 260" opacity="0.6"/>
+    </g>
+  </svg>
+  <svg viewBox="0 0 1400 400" width="1400" height="400" preserveAspectRatio="none" style="position: absolute; left: -140px; bottom: 10px; opacity: 0.35; animation: tide-2 30s linear infinite;">
+    <g fill="none" stroke="#9db8bd" stroke-width="1.6">
+      <path d="M0 220 C 200 150, 400 300, 600 220 S 1000 150, 1200 220 S 1400 300, 1400 220"/>
+    </g>
+  </svg>
+
+  <!-- grain -->
+  <svg width="1080" height="1350" style="position: absolute; inset: 0; opacity: 0.07; mix-blend-mode: overlay; pointer-events: none;">
+    <filter id="grainC"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/></filter>
+    <rect width="100%" height="100%" filter="url(#grainC)"/>
+  </svg>
+
+  <!-- content -->
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 108px 100px 96px;">
+
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #e7c48a;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #e7c48a; opacity: .55;"></span>
+      <span style="width: 9px; height: 9px; border-radius: 50%; background: #e7c48a; opacity: .3;"></span>
+    </div>
+
+    <div style="font-family: 'Work Sans', sans-serif; font-weight: 400; font-size: 26px; letter-spacing: 0.42em;
+         text-transform: uppercase; color: #cbb98f; margin-top: 42px;">on&nbsp;&nbsp;fear</div>
+
+    <!-- headline along a wave (not straight) -->
+    <svg viewBox="0 0 960 340" width="912" style="margin-top: 30px; overflow: visible;">
+      <path id="waveC" d="M 10 190 C 190 108, 350 252, 500 182 S 790 104, 950 176" fill="none"/>
+      <text style="font-family: 'Spectral', Georgia, serif; font-weight: 400; font-style: italic; font-size: 76px; fill: #f2ead9;">
+        <textPath href="#waveC" startOffset="0%">The tide always returns.</textPath>
+      </text>
+    </svg>
+
+    <p style="margin: 0; margin-top: 26px; max-width: 720px; font-family: 'Spectral', Georgia, serif; font-weight: 300;
+         font-size: 46px; line-height: 1.9; letter-spacing: 0.012em; color: #d6dfe0;">
+      <b>N</b>othing <b>y</b>ou <b>l</b>ove <b>l</b>eaves <b>f</b>or <b>g</b>ood. <b>I</b>t <b>g</b>oes <b>o</b>ut, <b>s</b>o <b>t</b>hat <b>i</b>t <b>c</b>an <b>c</b>ome <b>b</b>ack <b>a</b>nd <b>fi</b>nd <b>y</b>ou <b>st</b>ill <b>st</b>anding <b>o</b>n <b>t</b>he <b>sh</b>ore.
+    </p>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="#e7c48a" stroke-width="2" stroke-linecap="round">
+        <path d="M26 46 C 26 30, 26 22, 26 10"/>
+        <path d="M26 24 C 14 22, 8 15, 8 6 C 18 7, 25 13, 26 24Z" fill="#e7c48a" fill-opacity="0.18"/>
+        <path d="M26 30 C 38 28, 44 21, 44 12 C 34 13, 27 19, 26 30Z" fill="#e7c48a" fill-opacity="0.12"/>
+      </svg>
+      <span style="font-family: 'Caveat', cursive; font-size: 68px; color: #e7c48a; line-height: 1;">yoav</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
