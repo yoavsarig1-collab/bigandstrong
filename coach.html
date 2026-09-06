@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coach">
+<title>Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080f08;--surface:#0d1a0d;--card:#111e11;--card2:#172617;
+  --border:#1c2e1c;--border2:#253c25;--border-line:rgba(122,184,112,0.1);
+  --accent:#7ab870;--accent-dim:rgba(122,184,112,0.13);--accent-glow:rgba(122,184,112,0.22);
+  --amber:#c9a84c;--amber-dim:rgba(201,168,76,0.13);
+  --text:#ddeadd;--muted:#527052;--muted2:#7a9c7a;
+  --danger:#e05555;--danger-dim:rgba(224,85,85,0.13);
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);--ease:cubic-bezier(0.16,1,0.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;height:100%;}
+body{display:flex;flex-direction:column;min-height:100%;}
+input,button,textarea,select{font-family:inherit;color:inherit;}
+button{cursor:pointer;}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.active{display:flex;animation:sIn .18s var(--ease);}
+@keyframes sIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bot) + 80px);}
+
+/* ── TOPBAR ── */
+.topbar{
+  padding:calc(var(--safe-top) + 16px) 16px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;border-bottom:1px solid var(--border-line);background:var(--bg);
+}
+.tb-title{font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.tb-title span{color:var(--accent);}
+.tb-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* ── WEEK NAV ── */
+.weeknav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;gap:8px;}
+.wn-btn{width:40px;height:40px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wn-btn:active{border-color:var(--accent);color:var(--accent);}
+.wn-center{flex:1;text-align:center;}
+.wn-range{font-family:'Barlow';font-size:15px;font-weight:700;color:var(--text);}
+.wn-today{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;margin-top:1px;}
+.wn-today.now{color:var(--accent);}
+.today-pill{margin:0 16px 4px;text-align:center;}
+.today-pill button{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(122,184,112,.25);border-radius:3px;padding:4px 12px;}
+
+/* ── MATRIX ── */
+.matrix-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:8px 0 4px;}
+.matrix{border-collapse:separate;border-spacing:0;min-width:100%;}
+.matrix th,.matrix td{padding:0;vertical-align:top;}
+.mx-corner{position:sticky;left:0;z-index:3;background:var(--bg);min-width:104px;width:104px;}
+.mx-dayhdr{min-width:118px;padding:6px 6px 8px;text-align:center;background:var(--bg);}
+.mx-dayname{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.mx-daynum{font-family:'Barlow';font-size:16px;font-weight:700;color:var(--muted2);margin-top:2px;line-height:1;}
+.mx-dayhdr.today .mx-dayname{color:var(--accent);}
+.mx-dayhdr.today .mx-daynum{color:var(--accent);}
+.mx-dayhdr.today{background:var(--accent-dim);border-radius:4px 4px 0 0;}
+.mx-trainee{position:sticky;left:0;z-index:2;background:var(--bg);min-width:104px;width:104px;padding:8px 8px 8px 0;border-top:1px solid var(--border-line);}
+.mx-tr-inner{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border);border-left-width:3px;border-radius:4px;padding:10px 8px;min-height:56px;}
+.mx-tr-name{font-family:'Barlow';font-size:13px;font-weight:700;line-height:1.15;word-break:break-word;}
+.mx-cell{min-width:118px;border-top:1px solid var(--border-line);padding:6px 4px;}
+.mx-cell.today{background:rgba(122,184,112,0.04);}
+.mx-cellbox{min-height:56px;display:flex;flex-direction:column;gap:4px;border-radius:4px;padding:2px;}
+.mx-cellbox.tappable:active{background:var(--card);}
+
+.wchip{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:3px;padding:5px 6px;position:relative;overflow:hidden;}
+.wchip::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wc,var(--accent));}
+.wchip .wc-box{width:18px;height:18px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-left:2px;}
+.wchip.done .wc-box{background:var(--accent);border-color:var(--accent);}
+.wchip.done .wc-box::after{content:'✓';font-size:12px;color:#0a180a;font-weight:800;}
+.wchip .wc-name{font-family:'Barlow';font-size:12px;font-weight:600;color:var(--text);line-height:1.15;flex:1;min-width:0;}
+.wchip.done .wc-name{color:var(--muted2);text-decoration:line-through;text-decoration-color:var(--muted);}
+.wchip .wc-note{color:var(--amber);font-size:11px;flex-shrink:0;}
+.wchip.skip{opacity:.4;}
+.wchip.skip .wc-name{text-decoration:line-through;}
+.cell-empty{font-family:'DM Mono',monospace;font-size:16px;color:var(--border2);text-align:center;padding:14px 0;}
+.cell-add{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border:1px dashed var(--border2);border-radius:3px;padding:5px;text-align:center;background:none;width:100%;}
+.cell-add:active{border-color:var(--accent);color:var(--accent);}
+
+.empty-block{margin:32px 16px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:32px 20px;text-align:center;}
+.empty-icon{font-size:34px;margin-bottom:10px;opacity:.5;}
+.empty-txt{font-size:14px;color:var(--muted2);line-height:1.6;margin-bottom:16px;}
+
+/* ── SECTION / LISTS ── */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+.section-title{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;}
+.section-btn{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);background:none;border:none;padding:4px 0;}
+
+.tr-list{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
+.tr-card{background:var(--card);border:1px solid var(--border);border-left-width:3px;border-radius:4px;padding:14px;}
+.tr-top{display:flex;align-items:center;gap:10px;}
+.tr-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.tr-nm{font-size:16px;font-weight:700;flex:1;}
+.tr-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.tr-edit{background:none;border:1px solid var(--border2);border-radius:3px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;padding:5px 9px;}
+.tr-edit:active{border-color:var(--accent);color:var(--accent);}
+.tr-rules{margin-top:10px;display:flex;flex-direction:column;gap:5px;}
+.rule-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted2);}
+.rule-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.rule-nm{font-weight:600;color:var(--text);}
+.rule-days{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;margin-left:auto;}
+.tr-none{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;}
+
+/* ── BOTTOM NAV ── */
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:20;
+  display:flex;background:var(--surface);border-top:1px solid var(--border);
+  padding-bottom:var(--safe-bot);
+}
+.tab{flex:1;padding:12px 0 10px;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);}
+.tab.active{color:var(--accent);}
+.tab-ic{font-size:19px;line-height:1;}
+.tab-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ── SHEET / MODAL ── */
+.sheet-scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:none;align-items:flex-end;}
+.sheet-scrim.open{display:flex;animation:fadeIn .18s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-height:90vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:14px 14px 0 0;display:flex;flex-direction:column;animation:sheetUp .24s var(--ease);}
+@keyframes sheetUp{from{transform:translateY(30px)}to{transform:none}}
+.sheet-grab{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 4px;}
+.sheet-hdr{padding:8px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-line);}
+.sheet-title{font-size:17px;font-weight:800;}
+.sheet-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:1px;}
+.sheet-x{background:none;border:none;color:var(--muted);font-size:26px;line-height:1;padding:0 4px;}
+.sheet-body{padding:16px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+.fld{margin-bottom:16px;}
+.fld-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.txt-in{width:100%;height:46px;background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:0 12px;font-size:15px;color:var(--text);}
+.txt-in:focus{outline:none;border-color:var(--accent);}
+textarea.txt-in{height:auto;min-height:64px;padding:10px 12px;resize:vertical;line-height:1.5;}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;}
+.sw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;}
+.sw.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--bg),0 0 0 4px currentColor;}
+
+.days-row{display:flex;gap:5px;}
+.day-btn{flex:1;height:42px;border-radius:4px;border:1px solid var(--border2);background:var(--card);color:var(--muted2);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;}
+.day-btn.sel{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+
+.pick-list{display:flex;flex-direction:column;gap:6px;}
+.pick-item{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:11px 12px;}
+.pick-item.sel{border-color:var(--accent);background:var(--accent-dim);}
+.pick-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+.pick-nm{font-size:14px;font-weight:600;flex:1;}
+.pick-item .pick-del{background:none;border:none;color:var(--muted);font-size:16px;padding:2px 6px;}
+
+.big-btn{width:100%;height:52px;border-radius:4px;background:var(--accent);color:#0a180a;border:none;font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+.big-btn:active{opacity:.85;}
+.big-btn.ghost{background:none;border:1px solid var(--border2);color:var(--muted2);}
+.big-btn.ghost:active{border-color:var(--accent);color:var(--accent);}
+.big-btn.danger{background:none;border:1px solid var(--danger);color:var(--danger);}
+.btn-row{display:flex;gap:8px;}
+.btn-row .big-btn{flex:1;}
+
+/* day detail workout row */
+.dd-item{background:var(--card);border:1px solid var(--border);border-left-width:3px;border-radius:4px;padding:12px;margin-bottom:10px;}
+.dd-top{display:flex;align-items:center;gap:10px;}
+.dd-check{width:26px;height:26px;border-radius:5px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.dd-check.on{background:var(--accent);border-color:var(--accent);}
+.dd-check.on::after{content:'✓';color:#0a180a;font-size:16px;font-weight:800;}
+.dd-nm{font-size:15px;font-weight:700;flex:1;}
+.dd-nm.done{color:var(--muted2);text-decoration:line-through;}
+.dd-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);border:1px solid var(--border2);border-radius:2px;padding:2px 5px;letter-spacing:.5px;}
+.dd-note{margin-top:10px;}
+.dd-actions{display:flex;gap:6px;margin-top:8px;}
+.dd-act{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:3px;padding:5px 9px;}
+.dd-act:active{border-color:var(--accent);color:var(--accent);}
+.dd-act.rm:active{border-color:var(--danger);color:var(--danger);}
+
+.toast{position:fixed;bottom:calc(var(--safe-bot) + 80px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:600;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s var(--ease);z-index:60;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.hint{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;background:var(--card);border-left:2px solid var(--border2);border-radius:2px;padding:9px 12px;margin:12px 16px;}
+</style>
+</head>
+<body>
+
+<!-- ══════ WEEK DASHBOARD ══════ -->
+<div class="screen active" id="scr-week">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Coach<span>.</span></div>
+      <div class="tb-sub" id="week-sub">—</div>
+    </div>
+    <button class="tr-edit" onclick="exportData()" style="height:32px">Backup</button>
+  </div>
+  <div class="scroll-body">
+    <div class="weeknav">
+      <button class="wn-btn" onclick="shiftWeek(-1)">‹</button>
+      <div class="wn-center">
+        <div class="wn-range" id="wn-range">—</div>
+        <div class="wn-today" id="wn-today">—</div>
+      </div>
+      <button class="wn-btn" onclick="shiftWeek(1)">›</button>
+    </div>
+    <div class="today-pill"><button onclick="goToday()">Jump to today</button></div>
+    <div id="matrix-host"></div>
+  </div>
+</div>
+
+<!-- ══════ TRAINEES ══════ -->
+<div class="screen" id="scr-trainees">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Trainees</div>
+      <div class="tb-sub" id="tr-sub">—</div>
+    </div>
+    <button class="tr-edit" style="height:32px" onclick="openTraineeEdit(null)">+ Add</button>
+  </div>
+  <div class="scroll-body">
+    <div id="trainee-host"></div>
+  </div>
+</div>
+
+<!-- ══════ TABBAR ══════ -->
+<div class="tabbar">
+  <button class="tab active" id="tab-week" onclick="showScreen('week')"><span class="tab-ic">▦</span><span class="tab-lbl">Week</span></button>
+  <button class="tab" id="tab-trainees" onclick="showScreen('trainees')"><span class="tab-ic">◉</span><span class="tab-lbl">Trainees</span></button>
+</div>
+
+<!-- ══════ GENERIC SHEET ══════ -->
+<div class="sheet-scrim" id="scrim" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-grab"></div>
+    <div class="sheet-hdr">
+      <div>
+        <div class="sheet-title" id="sheet-title">—</div>
+        <div class="sheet-sub" id="sheet-sub"></div>
+      </div>
+      <button class="sheet-x" onclick="closeSheet()">×</button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════ STATE ═══════════ */
+const SK='bns_coach_v1';
+const PALETTE=['#7ab870','#c9a84c','#5aa9d4','#c56ec5','#e0864b','#e05555','#6fcf97','#b088e8','#4bbfa0','#d4715a'];
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW1=['S','M','T','W','T','F','S'];
+
+let state;
+let anchor;            // Date: any day inside the currently viewed week
+let sheetCtx=null;
+
+function blank(){return {trainees:[],workouts:[],rules:[],log:{},adhoc:{},v:1};}
+function loadState(){
+  try{const r=localStorage.getItem(SK);state=r?JSON.parse(r):blank();}catch(e){state=blank();}
+  state.trainees??=[];state.workouts??=[];state.rules??=[];state.log??={};state.adhoc??={};
+}
+function persist(){try{localStorage.setItem(SK,JSON.stringify(state));}catch(e){}}
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+/* ═══════════ DATE HELPERS ═══════════ */
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseISO(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function startOfWeek(d){return addDays(d,-d.getDay());}   // Sunday start
+function todayISO(){return iso(new Date());}
+function sameISO(a,b){return a===b;}
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ═══════════ OCCURRENCE MODEL ═══════════ */
+// A day's items for a trainee = recurring rule occurrences + ad-hoc entries.
+function traineeById(id){return state.trainees.find(t=>t.id===id);}
+function workoutById(id){return state.workouts.find(w=>w.id===id);}
+
+function rulesFor(traineeId,dateISO){
+  const d=parseISO(dateISO),dow=d.getDay();
+  return state.rules.filter(r=>r.traineeId===traineeId
+    && r.days.includes(dow)
+    && dateISO>=r.start
+    && (!r.end||dateISO<=r.end));
+}
+function logKey(dateISO,ruleId){return dateISO+'|'+ruleId;}
+function getLog(dateISO,ruleId){return state.log[logKey(dateISO,ruleId)]||{};}
+function setLog(dateISO,ruleId,patch){
+  const k=logKey(dateISO,ruleId);
+  state.log[k]={...(state.log[k]||{}),...patch};persist();
+}
+function adhocFor(traineeId,dateISO){
+  return (state.adhoc[dateISO]||[]).filter(a=>a.traineeId===traineeId);
+}
+
+// Returns unified list of items for a trainee on a date
+function itemsFor(traineeId,dateISO){
+  const out=[];
+  rulesFor(traineeId,dateISO).forEach(r=>{
+    const w=workoutById(r.workoutId);if(!w)return;
+    const lg=getLog(dateISO,r.id);
+    out.push({kind:'rule',id:r.id,name:w.name,color:w.color,
+      done:!!lg.done,note:lg.note||'',skip:!!lg.skip});
+  });
+  adhocFor(traineeId,dateISO).forEach(a=>{
+    out.push({kind:'adhoc',id:a.id,name:a.name,color:a.color,
+      done:!!a.done,note:a.note||'',skip:false});
+  });
+  return out;
+}
+
+/* ═══════════ SCREENS ═══════════ */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('scr-'+name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='week')renderWeek();
+  if(name==='trainees')renderTrainees();
+}
+
+/* ═══════════ WEEK DASHBOARD ═══════════ */
+function shiftWeek(n){anchor=addDays(anchor,n*7);renderWeek();}
+function goToday(){anchor=new Date();renderWeek();}
+
+function renderWeek(){
+  const start=startOfWeek(anchor);
+  const days=[...Array(7)].map((_,i)=>addDays(start,i));
+  const end=days[6];
+  const tISO=todayISO();
+
+  // header labels
+  const rangeStr = start.getMonth()===end.getMonth()
+    ? `${MONTHS[start.getMonth()]} ${start.getDate()}–${end.getDate()}`
+    : `${MONTHS[start.getMonth()]} ${start.getDate()} – ${MONTHS[end.getMonth()]} ${end.getDate()}`;
+  document.getElementById('wn-range').textContent=rangeStr+', '+start.getFullYear();
+  const inThisWeek=days.some(d=>iso(d)===tISO);
+  const wt=document.getElementById('wn-today');
+  wt.textContent=inThisWeek?'This week':'';wt.classList.toggle('now',inThisWeek);
+  document.getElementById('week-sub').textContent=`${state.trainees.length} trainee${state.trainees.length===1?'':'s'} · wk of ${MONTHS[start.getMonth()]} ${start.getDate()}`;
+
+  const host=document.getElementById('matrix-host');
+  if(state.trainees.length===0){
+    host.innerHTML=`<div class="empty-block">
+      <div class="empty-icon">◉</div>
+      <div class="empty-txt">No trainees yet.<br>Add a trainee and give them a color, then assign the workouts they repeat each week.</div>
+      <button class="big-btn" onclick="showScreen('trainees');setTimeout(()=>openTraineeEdit(null),150)">Add your first trainee</button>
+    </div>`;
+    return;
+  }
+
+  let html='<div class="matrix-wrap"><table class="matrix"><thead><tr>';
+  html+='<th class="mx-corner"></th>';
+  days.forEach(d=>{
+    const isT=iso(d)===tISO;
+    html+=`<th class="mx-dayhdr ${isT?'today':''}">
+      <div class="mx-dayname">${DOW[d.getDay()]}</div>
+      <div class="mx-daynum">${d.getDate()}</div></th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  state.trainees.forEach(t=>{
+    html+='<tr>';
+    html+=`<td class="mx-trainee"><div class="mx-tr-inner" style="border-left-color:${t.color}" onclick="openTraineeEdit('${t.id}')">
+      <div class="mx-tr-name">${esc(t.name)}</div></div></td>`;
+    days.forEach(d=>{
+      const dISO=iso(d),isT=dISO===tISO;
+      const items=itemsFor(t.id,dISO);
+      let cell=`<div class="mx-cellbox tappable" onclick="openDay('${t.id}','${dISO}')">`;
+      if(items.length===0){
+        cell+='<div class="cell-empty">+</div>';
+      }else{
+        items.forEach(it=>{
+          cell+=`<div class="wchip ${it.done?'done':''} ${it.skip?'skip':''}" style="--wc:${it.color}">
+            <span class="wc-name">${esc(it.name)}</span>
+            ${it.note?'<span class="wc-note">✎</span>':''}
+            <span class="wc-box" onclick="event.stopPropagation();quickToggle('${t.id}','${dISO}','${it.kind}','${it.id}')"></span>
+          </div>`;
+        });
+      }
+      cell+='</div>';
+      html+=`<td class="mx-cell ${isT?'today':''}">${cell}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  host.innerHTML=html;
+}
+
+function quickToggle(traineeId,dISO,kind,id){
+  if(kind==='rule'){
+    const cur=getLog(dISO,id).done;setLog(dISO,id,{done:!cur});
+  }else{
+    const a=(state.adhoc[dISO]||[]).find(x=>x.id===id);if(a){a.done=!a.done;persist();}
+  }
+  renderWeek();
+}
+
+/* ═══════════ DAY DETAIL SHEET ═══════════ */
+function openDay(traineeId,dISO){
+  sheetCtx={traineeId,dISO};
+  const t=traineeById(traineeId);
+  const d=parseISO(dISO);
+  document.getElementById('sheet-title').textContent=t.name;
+  document.getElementById('sheet-sub').textContent=`${DOW[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`;
+  renderDaySheet();
+  openScrim();
+}
+function renderDaySheet(){
+  const {traineeId,dISO}=sheetCtx;
+  const items=itemsFor(traineeId,dISO);
+  let h='';
+  if(items.length===0){
+    h+='<div class="hint" style="margin:0 0 14px">Nothing scheduled. Add a one-off workout for this day, or set a repeating rule from the trainee\'s page.</div>';
+  }
+  items.forEach(it=>{
+    h+=`<div class="dd-item" style="border-left-color:${it.color}">
+      <div class="dd-top">
+        <div class="dd-check ${it.done?'on':''}" onclick="ddToggleDone('${it.kind}','${it.id}')"></div>
+        <div class="dd-nm ${it.done?'done':''}">${esc(it.name)}</div>
+        <span class="dd-tag">${it.kind==='rule'?'REPEATS':'ONE-OFF'}</span>
+      </div>
+      <div class="dd-note">
+        <textarea class="txt-in" placeholder="Note (visible to you)…"
+          onchange="ddNote('${it.kind}','${it.id}',this.value)">${esc(it.note)}</textarea>
+      </div>
+      <div class="dd-actions">
+        ${it.kind==='rule'
+          ? `<button class="dd-act" onclick="ddSkip('${it.id}')">${it.skip?'Un-skip':'Skip today'}</button>`
+          : `<button class="dd-act rm" onclick="ddRemoveAdhoc('${it.id}')">Remove</button>`}
+      </div>
+    </div>`;
+  });
+  h+=`<button class="big-btn ghost" onclick="openAddAdhoc()">+ Add workout for this day</button>`;
+  h+=`<button class="big-btn ghost" style="margin-top:8px" onclick="openTraineeEdit('${traineeId}')">Edit ${esc(traineeById(traineeId).name)}'s repeating plan</button>`;
+  document.getElementById('sheet-body').innerHTML=h;
+}
+function ddToggleDone(kind,id){
+  const {dISO}=sheetCtx;
+  if(kind==='rule'){setLog(dISO,id,{done:!getLog(dISO,id).done});}
+  else{const a=(state.adhoc[dISO]||[]).find(x=>x.id===id);if(a){a.done=!a.done;persist();}}
+  renderDaySheet();renderWeek();
+}
+function ddNote(kind,id,val){
+  const {dISO}=sheetCtx;
+  if(kind==='rule'){setLog(dISO,id,{note:val});}
+  else{const a=(state.adhoc[dISO]||[]).find(x=>x.id===id);if(a){a.note=val;persist();}}
+  renderWeek();
+}
+function ddSkip(id){
+  const {dISO}=sheetCtx;setLog(dISO,id,{skip:!getLog(dISO,id).skip});
+  renderDaySheet();renderWeek();
+}
+function ddRemoveAdhoc(id){
+  const {dISO}=sheetCtx;
+  state.adhoc[dISO]=(state.adhoc[dISO]||[]).filter(a=>a.id!==id);persist();
+  renderDaySheet();renderWeek();
+}
+
+/* add one-off workout for the day (reuse trainee's workout list, or new) */
+function openAddAdhoc(){
+  const {traineeId,dISO}=sheetCtx;
+  const ws=state.workouts.filter(w=>w.traineeId===traineeId);
+  let h=`<div class="fld"><div class="fld-lbl">Pick an existing workout</div><div class="pick-list">`;
+  if(ws.length===0)h+='<div class="tr-none">No saved workouts for this trainee yet — create one below.</div>';
+  ws.forEach(w=>{
+    h+=`<div class="pick-item" onclick="addAdhocFrom('${w.id}')">
+      <span class="pick-dot" style="background:${w.color}"></span>
+      <span class="pick-nm">${esc(w.name)}</span></div>`;
+  });
+  h+=`</div></div>
+    <div class="fld"><div class="fld-lbl">Or create a new one</div>
+      <input class="txt-in" id="adhoc-name" placeholder="e.g. Recovery walk" style="margin-bottom:10px">
+      <div class="swatches" id="adhoc-sw"></div>
+    </div>
+    <button class="big-btn" onclick="addAdhocNew()">Add to this day</button>
+    <button class="big-btn ghost" style="margin-top:8px" onclick="renderDaySheet()">Back</button>`;
+  document.getElementById('sheet-body').innerHTML=h;
+  buildSwatches('adhoc-sw',PALETTE[0]);
+}
+function addAdhocFrom(wid){
+  const {traineeId,dISO}=sheetCtx;const w=workoutById(wid);
+  (state.adhoc[dISO]??=[]).push({id:uid(),traineeId,name:w.name,color:w.color,done:false,note:''});
+  persist();renderDaySheet();renderWeek();toast('Added');
+}
+function addAdhocNew(){
+  const {traineeId,dISO}=sheetCtx;
+  const name=document.getElementById('adhoc-name').value.trim();
+  if(!name){toast('Name it first');return;}
+  const color=selectedSwatch('adhoc-sw');
+  // also save it as a reusable workout for this trainee
+  state.workouts.push({id:uid(),traineeId,name,color});
+  (state.adhoc[dISO]??=[]).push({id:uid(),traineeId,name,color,done:false,note:''});
+  persist();renderDaySheet();renderWeek();toast('Added');
+}
+
+/* ═══════════ TRAINEES SCREEN ═══════════ */
+function renderTrainees(){
+  document.getElementById('tr-sub').textContent=`${state.trainees.length} total`;
+  const host=document.getElementById('trainee-host');
+  if(state.trainees.length===0){
+    host.innerHTML=`<div class="empty-block">
+      <div class="empty-icon">◉</div>
+      <div class="empty-txt">Add your trainees here. Each gets a tone color and a weekly plan you set once.</div>
+      <button class="big-btn" onclick="openTraineeEdit(null)">Add trainee</button>
+    </div>`;return;
+  }
+  let h='<div class="tr-list">';
+  state.trainees.forEach(t=>{
+    const rules=state.rules.filter(r=>r.traineeId===t.id);
+    h+=`<div class="tr-card" style="border-left-color:${t.color}">
+      <div class="tr-top">
+        <span class="tr-dot" style="background:${t.color}"></span>
+        <span class="tr-nm">${esc(t.name)}</span>
+        <span class="tr-count">${rules.length} rule${rules.length===1?'':'s'}</span>
+        <button class="tr-edit" onclick="openTraineeEdit('${t.id}')">Edit</button>
+      </div>`;
+    if(rules.length){
+      h+='<div class="tr-rules">';
+      rules.forEach(r=>{
+        const w=workoutById(r.workoutId);if(!w)return;
+        h+=`<div class="rule-row">
+          <span class="rule-dot" style="background:${w.color}"></span>
+          <span class="rule-nm">${esc(w.name)}</span>
+          <span class="rule-days">${r.days.slice().sort().map(d=>DOW[d]).join(' ')}</span>
+        </div>`;
+      });
+      h+='</div>';
+    }else{
+      h+='<div class="tr-none">No weekly plan yet — tap Edit to add workouts.</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+  host.innerHTML=h;
+}
+
+/* ── trainee edit sheet ── */
+let editTrainee=null; // draft
+function openTraineeEdit(id){
+  editTrainee = id ? {...traineeById(id)} : {id:uid(),name:'',color:PALETTE[state.trainees.length%PALETTE.length],_new:true};
+  sheetCtx={trEdit:editTrainee.id};
+  document.getElementById('sheet-title').textContent=editTrainee._new?'New trainee':'Edit trainee';
+  document.getElementById('sheet-sub').textContent='';
+  renderTraineeEdit();
+  openScrim();
+}
+function renderTraineeEdit(){
+  const t=editTrainee;
+  const isNew=!!t._new;
+  let h=`<div class="fld">
+      <div class="fld-lbl">Name</div>
+      <input class="txt-in" id="tr-name" value="${esc(t.name)}" placeholder="Trainee name" oninput="editTrainee.name=this.value">
+    </div>
+    <div class="fld">
+      <div class="fld-lbl">Tone color</div>
+      <div class="swatches" id="tr-sw"></div>
+    </div>`;
+  if(!isNew){
+    const rules=state.rules.filter(r=>r.traineeId===t.id);
+    h+=`<div class="fld"><div class="fld-lbl">Weekly plan</div><div class="pick-list">`;
+    if(rules.length===0)h+='<div class="tr-none">No workouts yet.</div>';
+    rules.forEach(r=>{
+      const w=workoutById(r.workoutId);if(!w)return;
+      h+=`<div class="pick-item" onclick="openRuleEdit('${r.id}')">
+        <span class="pick-dot" style="background:${w.color}"></span>
+        <span class="pick-nm">${esc(w.name)}</span>
+        <span class="rule-days">${r.days.slice().sort().map(d=>DOW1[d]).join('')}</span>
+        <button class="pick-del" onclick="event.stopPropagation();delRule('${r.id}')">×</button>
+      </div>`;
+    });
+    h+=`</div><button class="big-btn ghost" style="margin-top:10px" onclick="openRuleEdit(null)">+ Add workout to plan</button></div>`;
+  }else{
+    h+=`<div class="hint" style="margin:0 0 14px">Save the trainee first, then you can add the workouts they repeat each week.</div>`;
+  }
+  h+=`<button class="big-btn" onclick="saveTrainee()">${isNew?'Add trainee':'Save'}</button>`;
+  if(!isNew)h+=`<button class="big-btn danger" style="margin-top:8px" onclick="delTrainee('${t.id}')">Delete trainee</button>`;
+  document.getElementById('sheet-body').innerHTML=h;
+  buildSwatches('tr-sw',t.color,c=>editTrainee.color=c);
+}
+function saveTrainee(){
+  const t=editTrainee;
+  t.name=(document.getElementById('tr-name').value||'').trim();
+  if(!t.name){toast('Name it first');return;}
+  if(t._new){const {_new,...clean}=t;state.trainees.push(clean);}
+  else{const i=state.trainees.findIndex(x=>x.id===t.id);state.trainees[i]={...state.trainees[i],name:t.name,color:t.color};}
+  persist();
+  if(t._new){delete editTrainee._new;renderTraineeEdit();document.getElementById('sheet-title').textContent='Edit trainee';toast('Added — now build the plan');}
+  else{closeSheet();toast('Saved');}
+  renderTrainees();renderWeek();
+}
+function delTrainee(id){
+  if(!confirm('Delete this trainee and their whole plan?'))return;
+  state.trainees=state.trainees.filter(t=>t.id!==id);
+  state.rules=state.rules.filter(r=>r.traineeId!==id);
+  state.workouts=state.workouts.filter(w=>w.traineeId!==id);
+  persist();closeSheet();renderTrainees();renderWeek();toast('Deleted');
+}
+
+/* ── rule (weekly workout) edit ── */
+let editRule=null;
+function openRuleEdit(id){
+  const traineeId=editTrainee.id;
+  if(id){
+    const r=state.rules.find(x=>x.id===id);
+    const w=workoutById(r.workoutId);
+    editRule={id:r.id,traineeId,workoutId:r.workoutId,name:w.name,color:w.color,days:[...r.days],start:r.start,_existing:true};
+  }else{
+    editRule={id:uid(),traineeId,workoutId:null,name:'',color:PALETTE[state.workouts.length%PALETTE.length],days:[],start:todayISO(),_existing:false};
+  }
+  renderRuleEdit();
+}
+function renderRuleEdit(){
+  const r=editRule;
+  const ws=state.workouts.filter(w=>w.traineeId===r.traineeId);
+  let h=`<div class="fld"><div class="fld-lbl">Workout name</div>
+      <input class="txt-in" id="ru-name" value="${esc(r.name)}" placeholder="e.g. Leg day, Upper A, 5k run" oninput="editRule.name=this.value">
+    </div>`;
+  if(ws.length){
+    h+=`<div class="fld"><div class="fld-lbl">Or reuse one</div><div class="days-row" style="flex-wrap:wrap;gap:6px">`;
+    ws.forEach(w=>{
+      h+=`<button class="day-btn ${r.workoutId===w.id?'sel':''}" style="flex:0 0 auto;padding:0 12px" onclick="pickWorkout('${w.id}')">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${w.color};margin-right:6px"></span>${esc(w.name)}</button>`;
+    });
+    h+=`</div></div>`;
+  }
+  h+=`<div class="fld"><div class="fld-lbl">Color</div><div class="swatches" id="ru-sw"></div></div>
+    <div class="fld"><div class="fld-lbl">Which days?</div><div class="days-row">`;
+  for(let i=0;i<7;i++){
+    h+=`<button class="day-btn ${r.days.includes(i)?'sel':''}" onclick="toggleDay(${i})">${DOW1[i]}</button>`;
+  }
+  h+=`</div></div>
+    <div class="fld"><div class="fld-lbl">Starts on</div>
+      <input class="txt-in" type="date" id="ru-start" value="${r.start}" onchange="editRule.start=this.value">
+    </div>
+    <button class="big-btn" onclick="saveRule()">${r._existing?'Save workout':'Add to plan'}</button>
+    <button class="big-btn ghost" style="margin-top:8px" onclick="renderTraineeEdit()">Back</button>`;
+  document.getElementById('sheet-body').innerHTML=h;
+  document.getElementById('sheet-title').textContent=r._existing?'Edit workout':'Add workout';
+  buildSwatches('ru-sw',r.color,c=>{editRule.color=c;});
+}
+function pickWorkout(wid){
+  const w=workoutById(wid);
+  editRule.workoutId=wid;editRule.name=w.name;editRule.color=w.color;
+  renderRuleEdit();
+}
+function toggleDay(i){
+  const d=editRule.days;const k=d.indexOf(i);
+  if(k>=0)d.splice(k,1);else d.push(i);
+  renderRuleEdit();
+}
+function saveRule(){
+  const r=editRule;
+  r.name=(document.getElementById('ru-name').value||'').trim();
+  if(!r.name){toast('Name the workout');return;}
+  if(r.days.length===0){toast('Pick at least one day');return;}
+  // resolve workout record (create or update)
+  let w=r.workoutId?workoutById(r.workoutId):null;
+  if(w){w.name=r.name;w.color=r.color;}
+  else{w={id:uid(),traineeId:r.traineeId,name:r.name,color:r.color};state.workouts.push(w);r.workoutId=w.id;}
+  if(r._existing){
+    const rr=state.rules.find(x=>x.id===r.id);
+    rr.workoutId=w.id;rr.days=[...r.days];rr.start=r.start;
+  }else{
+    state.rules.push({id:r.id,traineeId:r.traineeId,workoutId:w.id,days:[...r.days],start:r.start,end:null});
+  }
+  persist();renderTraineeEdit();renderTrainees();renderWeek();toast('Saved');
+}
+function delRule(id){
+  if(!confirm('Remove this workout from the plan?'))return;
+  state.rules=state.rules.filter(r=>r.id!==id);
+  persist();renderTraineeEdit();renderTrainees();renderWeek();toast('Removed');
+}
+
+/* ═══════════ SWATCHES ═══════════ */
+function buildSwatches(hostId,current,onpick){
+  const host=document.getElementById(hostId);if(!host)return;
+  host.dataset.sel=current;
+  host.innerHTML=PALETTE.map(c=>
+    `<button class="sw ${c===current?'sel':''}" style="background:${c};color:${c}" data-c="${c}"></button>`).join('');
+  host.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{
+    host.dataset.sel=b.dataset.c;
+    host.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    if(onpick)onpick(b.dataset.c);
+  });
+}
+function selectedSwatch(hostId){return document.getElementById(hostId).dataset.sel;}
+
+/* ═══════════ SHEET / TOAST ═══════════ */
+function openScrim(){document.getElementById('scrim').classList.add('open');}
+function closeSheet(){document.getElementById('scrim').classList.remove('open');sheetCtx=null;}
+let toastT;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1600);}
+
+/* ═══════════ BACKUP ═══════════ */
+function exportData(){
+  const blob=new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='coach-backup-'+todayISO()+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+  toast('Backup downloaded');
+}
+
+/* ═══════════ UTIL ═══════════ */
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ═══════════ INIT ═══════════ */
+loadState();
+anchor=new Date();
+renderWeek();
+</script>
+</body>
+</html>
