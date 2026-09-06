@@ -1,0 +1,273 @@
+{
+  "_meta": {
+    "purpose": "Phase 0 stress-test — Jonathan's 12-week program encoded into the proposed Big & Strong data model.",
+    "coverage": "Representative slices, not all 12 weeks verbatim. Every structural case appears at least once: week-param inheritance, explicit accessory prescription, ranges, per-side, supersets, tempo, conditional 'enters week 5', non-strength session types (Zone 2 / plyo), variations-with-reason, block-level weekly templates that change, deload/taper overrides, monitoring rules, test protocol + goals, block exit gates.",
+    "units": "kg, %1RM, RIR, cm, s. Numbers stay LTR inside Hebrew UI.",
+    "language_rule": "exercise.name = English (default). exercise.name_he = Hebrew alias. Program prose fields carry Hebrew."
+  },
+
+  "athlete": {
+    "id": "ath_jonathan",
+    "name": "Jonathan",
+    "sport": "basketball",
+    "role": "guard (1-2)",
+    "baseline": { "height_cm": 184, "weight_kg": 79, "age": 28, "training_age_years": 12 },
+    "limitations": [
+      {
+        "id": "lim_erector_r",
+        "area": "upper erector spinae, right",
+        "pattern": "morning after training; not limiting during training",
+        "note_he": "כאב בזוקף העליון בצד ימין. מורגש בעיקר בבוקר שלאחר אימון."
+      }
+    ],
+    "estimated_maxes": [
+      { "exercise": "ex_trapbar_dl", "value_kg": 110, "verified": false },
+      { "exercise": "ex_bench", "value_kg": 50, "verified": false },
+      { "exercise": "ex_conv_dl", "value_kg": 70, "verified": false }
+    ]
+  },
+
+  "exercises": [
+    { "id": "ex_trapbar_dl", "name": "Trap-bar deadlift", "name_he": "דדליפט טרפ-בר", "type": "strength", "pattern": "hinge" },
+    { "id": "ex_conv_dl", "name": "Conventional deadlift", "name_he": "דדליפט קונבנציונלי", "type": "strength", "pattern": "hinge" },
+    { "id": "ex_bench", "name": "Bench press", "name_he": "לחיצת חזה", "type": "strength", "pattern": "h-push" },
+    { "id": "ex_incline_db_press", "name": "Incline DB press", "name_he": "לחיצת חזה משופעת, משקולות יד", "type": "strength", "pattern": "h-push" },
+    { "id": "ex_bulgarian", "name": "Bulgarian split squat", "name_he": "סקוואט בולגרי", "type": "strength", "pattern": "squat", "unilateral": true },
+    { "id": "ex_back_squat", "name": "Back squat", "name_he": "סקוואט אחורי", "type": "strength", "pattern": "squat" },
+    { "id": "ex_rdl", "name": "RDL", "name_he": "רומנית", "type": "strength", "pattern": "hinge" },
+    { "id": "ex_pallof", "name": "Pallof press", "name_he": "פאלוף פרס", "type": "core", "pattern": "anti-rotation" },
+    { "id": "ex_chest_supported_row", "name": "Chest-supported row", "name_he": "חתירה בתמיכת חזה", "type": "strength", "pattern": "h-pull" },
+    { "id": "ex_bent_row", "name": "Bent-over row", "name_he": "חתירה כפופה", "type": "strength", "pattern": "h-pull" },
+    { "id": "ex_pogo", "name": "Pogo hops", "name_he": "פוגו הופס", "type": "plyo" },
+    { "id": "ex_drop_jump", "name": "Drop jump", "name_he": "קפיצת עומק", "type": "plyo" },
+    { "id": "ex_zone2", "name": "Zone 2 (erg / row)", "name_he": "אירובי Zone 2", "type": "cardio" }
+  ],
+
+  "variations": [
+    {
+      "id": "var_trapbar_for_conv",
+      "exercise": "ex_conv_dl",
+      "substitute": "ex_trapbar_dl",
+      "reason": "injury",
+      "reason_ref": "lim_erector_r",
+      "rationale_he": "הפחתת עומס גזירה על עמוד השדרה ביחס לדדליפט קונבנציונלי",
+      "role": "program_default"
+    },
+    {
+      "id": "var_supported_row_for_bent",
+      "exercise": "ex_bent_row",
+      "substitute": "ex_chest_supported_row",
+      "reason": "injury",
+      "reason_ref": "lim_erector_r",
+      "rationale_he": "ביטול העומס האיזומטרי על הזוקפים",
+      "role": "program_default"
+    },
+    {
+      "id": "var_bulgarian_home",
+      "exercise": "ex_bulgarian",
+      "substitute": "ex_bulgarian",
+      "reason": "location",
+      "location": "home",
+      "note": "bodyweight or backpack load when no rack — on-demand swap the trainee can pick",
+      "role": "on_demand"
+    }
+  ],
+
+  "program": {
+    "id": "prog_bball_offseason_v1",
+    "title_he": "תוכנית אימון — כדורסל, תקופת פגרה",
+    "title_en": "Basketball off-season",
+    "period": "off-season",
+    "duration_weeks": 12,
+
+    "monitoring": [
+      { "metric": "morning_pain", "scale": "0-10", "when": "first 30 min after waking, day after strength/game",
+        "rules": [
+          { "trend": "down_or_stable", "action": "progress_as_planned" },
+          { "trend": "up_2_weeks", "action": "freeze_load" },
+          { "trend": "score>=6 OR spreading OR sleep_disturbed", "action": "stop_relevant_exercises_refer" }
+        ] },
+      { "metric": "bar_velocity", "rule": "end set at 20-25% drop vs fastest rep", "purpose": "objective RIR" }
+    ],
+
+    "test_protocol": {
+      "fixed_order": true,
+      "note_he": "בדיקות המהירות והקפיצה קודמות לעבודה הכבדה — עייפות מזייפת נתוני בסיס.",
+      "steps": [
+        { "order": 1, "test": "warmup_15min" },
+        { "order": 2, "test": "CMJ", "attempts": 3 },
+        { "order": 3, "test": "jump_force_velocity_profile", "loads_pct_bw": [0,20,40,60] },
+        { "order": 4, "test": "sprint_20m", "splits_m": [5,10,20], "attempts": 3 },
+        { "order": 5, "test": "5-10-5", "attempts_per_side": 2 },
+        { "order": 6, "test": "trapbar_5rm" }
+      ],
+      "scheduled_weeks": [2, 6, 12],
+      "week6_additions": ["conv_deadlift_check"]
+    },
+
+    "goals": [
+      { "metric": "CMJ", "baseline": "week2", "target": "+3-5 cm" },
+      { "metric": "sprint_20m", "baseline": "week2", "target": "-0.1 s" },
+      { "metric": "trapbar_5rm", "baseline_kg": 110, "target": "+15-20%" },
+      { "metric": "5-10-5", "baseline": "week2", "target": "measurable improvement" },
+      { "metric": "bodyweight", "baseline_kg": 79, "target_kg": "81-82" },
+      { "metric": "morning_pain", "target": "0 under loaded movement" }
+    ],
+
+    "weekly_templates": {
+      "_note": "Day→session map lives at block scope, not program scope — it changes across blocks.",
+      "base": {
+        "applies_to_blocks": ["blk1", "blk2", "blk3"],
+        "days": {
+          "sun": "game_5v5", "mon": "session_upper", "tue": "session_lower",
+          "wed": "game_3v3", "thu": "session_lower_unilateral", "fri": "technical_light", "sat": "rest"
+        },
+        "rationale_he": "משחק 5 על 5 = עומס הפעילות הגבוה. שני = עליון לאפשר התאוששות תחתון. תחתון כבד שלישי, 48ש' אחרי משחק."
+      },
+      "peak_9_11": {
+        "applies_to_weeks": [9, 10, 11],
+        "days": {
+          "sun": "game_5v5", "mon": "session_upper_power", "tue": "session_lower_contrast",
+          "wed": "game_3v3", "thu": "rest_full", "fri": "game_5v5", "sat": "rest"
+        }
+      },
+      "taper_12": {
+        "applies_to_weeks": [12],
+        "days": {
+          "sun": "game_5v5", "mon": "power_reduced_vol", "tue": "technical",
+          "wed": "rest", "thu": "power_reduced_vol", "fri": "test_battery", "sat": "rest"
+        }
+      }
+    },
+
+    "blocks": [
+      {
+        "id": "blk1", "index": 1, "name_he": "חזרה לשגרה", "focus": "anatomical adaptation",
+        "weeks": [1, 2],
+        "week_params": {
+          "1": { "base_sets": 3, "base_reps": [8,12], "rir": [3,4], "intensity_pct": [60,68], "rest_s": [90,120] },
+          "2": { "base_sets": 4, "base_reps": [8,10], "rir": [2,3], "intensity_pct": [68,75], "rest_s": [120,120] }
+        },
+        "exit_conditions": [
+          { "metric": "morning_pain", "condition": "stable_or_down (0-3)" },
+          { "condition": "test_battery_week2_complete" },
+          { "on_fail": "extend_block_1_week, no_load_increase" }
+        ]
+      },
+      {
+        "id": "blk2", "index": 2, "name_he": "בניית כוח מרבי", "focus": "max strength",
+        "weeks": [3, 4, 5],
+        "week_params": {
+          "3": { "base_sets": 4, "base_reps": [5,6], "rir": [2,3], "intensity_pct": [78,82], "rest_s": [180,180] },
+          "4": { "base_sets": [4,5], "base_reps": [4,5], "rir": [2,2], "intensity_pct": [82,85], "rest_s": [180,180] },
+          "5": { "base_sets": 5, "base_reps": [4,4], "rir": [1,2], "intensity_pct": [85,88], "rest_s": [180,180] }
+        },
+        "accessory_default": { "sets": 3, "reps": [8,10], "rir": [2,2] },
+        "exit_conditions": [
+          { "metric": "morning_pain", "condition": "< 3 after lower sessions & 5v5" },
+          { "condition": "working_weights_stable_on_base_lifts" }
+        ]
+      },
+      {
+        "id": "blk3", "index": 3, "name_he": "עבודה פליאומטרית", "focus": "power / RFD",
+        "weeks": [6, 7, 8],
+        "week_params": {
+          "6": { "_deload": true, "base_sets": [2,3], "base_reps": [3,4], "intensity_pct": [82,85], "rir": [3,3], "volume_note": "-50% vol, intensity kept, 1 game only, full test battery" },
+          "7": { "base_sets": 4, "base_reps": [4,5], "intensity_pct": [82,85], "rir": [2,2] },
+          "8": { "base_sets": [4,5], "base_reps": [3,4], "intensity_pct": [85,88], "rir": [1,2] }
+        },
+        "exit_conditions": [
+          { "condition": "drop_jumps_clean_no_valgus" },
+          { "metric": "morning_pain", "condition": "0-2" },
+          { "condition": ">=2 of 3 metrics improved week6 vs week2" }
+        ]
+      },
+      {
+        "id": "blk4", "index": 4, "name_he": "שיא התוכנית", "focus": "peak power / speed",
+        "weeks": [9, 10, 11, 12],
+        "method": "contrast",
+        "week_params": {
+          "9-11": { "intensity_pct": [50,70], "reps": 3, "tempo": "max_velocity", "rest_between_pairs_s": 180 },
+          "12": { "_taper": true, "note": "2 strength sessions, no work to failure, single-contact plyo" }
+        },
+        "contrast_pairs": [
+          { "heavy": { "exercise": "ex_trapbar_dl", "sets": 3, "reps": 3, "intensity_pct": 85 }, "explosive": { "exercise": "ex_broad_jump", "sets": 3, "reps": 3 } },
+          { "heavy": { "exercise": "ex_back_squat", "sets": 3, "reps": 3, "intensity_pct": 82 }, "explosive": { "exercise": "ex_squat_jump", "sets": 3, "reps": 5 } }
+        ]
+      }
+    ],
+
+    "session_templates": [
+      {
+        "id": "session_lower", "belongs_to_block": "blk1", "name_he": "אימון A — פלג גוף תחתון",
+        "sections": [
+          {
+            "name": "strength",
+            "instances": [
+              { "exercise": "ex_trapbar_dl", "prescription": { "mode": "inherit_week_params" }, "sets_override": [3,4], "reps_override": 8, "rir": [3,4] },
+              { "exercise": "ex_bulgarian", "prescription": { "mode": "explicit", "sets": [2,3], "reps": 8, "per_side": true, "rir": 3 },
+                "note_he": "רגל קדמית מוגבהת" },
+              { "exercise": "ex_leg_press", "prescription": { "mode": "explicit", "sets": 3, "reps": 12, "rir": 3 } },
+              { "exercise": "ex_leg_curl", "prescription": { "mode": "explicit", "sets": 3, "reps": 12, "rir": 3 } }
+            ]
+          },
+          {
+            "name": "core",
+            "instances": [
+              { "exercise": "ex_pallof", "prescription": { "mode": "explicit", "sets": [2,3], "reps": 10, "per_side": true } },
+              { "exercise": "ex_bird_dog", "prescription": { "mode": "explicit", "sets": 2, "reps": 8, "per_side": true } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "session_lower_contrast", "belongs_to_block": "blk4", "name_he": "אימון תחתון + פליאומטרי",
+        "time_boxed": true,
+        "sections": [
+          { "name": "warmup", "duration_min": 15, "content_he": "כללי 5 דק' + ניידות 90/90, פתיחת ספר תורקאלית + אקטיבציה" },
+          {
+            "name": "plyometrics", "duration_min": 10, "set_style": "straight",
+            "instances": [
+              { "exercise": "ex_pogo", "prescription": { "mode": "explicit", "sets": 3, "reps": 12, "rest_s": 45 } },
+              { "exercise": "ex_drop_jump", "prescription": { "mode": "explicit", "sets": 3, "reps": 4, "rest_s": 60 }, "metrics": { "box_height_cm": 30 },
+                "note": "focus = short ground contact, not jump height" }
+            ]
+          },
+          {
+            "name": "strength", "duration_min": 35,
+            "warmup_ramp": "empty bar x8, 50% x5, 70% x3, 85% x1-2",
+            "instances": [
+              { "exercise": "ex_trapbar_dl", "prescription": { "mode": "explicit", "sets": 4, "reps": [4,5], "load_kg": 110, "rir": 2, "rest_s": 180 } },
+              { "exercise": "ex_bulgarian", "superset_group": "C", "prescription": { "mode": "explicit", "sets": 3, "reps": [6,8], "per_side": true, "rir": 2, "rest_s": 90 } },
+              { "exercise": "ex_rdl", "superset_group": "C", "prescription": { "mode": "explicit", "sets": 3, "reps": [8,10], "rir": 3, "rest_s": 90 } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "session_lower_blk2", "belongs_to_block": "blk2", "name_he": "אימון B — פלג גוף תחתון (שלישי)",
+        "sections": [
+          {
+            "name": "strength",
+            "instances": [
+              { "exercise": "ex_trapbar_dl", "prescription": { "mode": "inherit_week_params" } },
+              { "exercise": "ex_back_squat", "prescription": { "mode": "explicit", "sets": 3, "reps": 5, "intensity_pct": 80 },
+                "active_from_week": 5, "condition_he": "בכפוף למגמת ירידה במדד הכאב" },
+              { "exercise": "ex_leg_press", "prescription": { "mode": "explicit", "sets": 3, "reps": 8, "rir": 2 } },
+              { "exercise": "ex_rdl", "prescription": { "mode": "explicit", "sets": 3, "reps": 8, "rir": [2,3] } },
+              { "exercise": "ex_nordic", "prescription": { "mode": "explicit", "sets": 3, "reps": 5, "tempo": "3s eccentric" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  "assignment": {
+    "id": "asg_jonathan_v1",
+    "athlete": "ath_jonathan",
+    "program": "prog_bball_offseason_v1",
+    "start_date": "2026-09-06",
+    "_note": "Anchors the 12-week template to real calendar dates; logs, check-ins and test_results attach here."
+  }
+}

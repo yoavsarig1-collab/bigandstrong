@@ -1,0 +1,468 @@
+<title>Big &amp; Strong Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=DM+Mono:wght@400;500&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  /* light = "blueprint paper", green ink */
+  --bg:#ecefe7; --surface:#ffffff; --panel:#f5f7f1; --card:#ffffff;
+  --border:#dce2d4; --border-strong:#c3ccb6;
+  --ink:#16211a; --muted:#54634f; --faint:#7c8a76;
+  --accent:#2f6b2c; --accent-soft:rgba(47,107,44,.10);
+  --amber:#846309; --amber-soft:rgba(132,99,9,.12);
+  --good:#2f6b2c; --warn:#8a6410; --crit:#b23838;
+  --shadow:0 1px 2px rgba(20,40,20,.05),0 10px 30px rgba(20,40,20,.05);
+  --measure:66ch;
+  --mono:'DM Mono',ui-monospace,monospace;
+  --disp:'Barlow','Heebo',system-ui,sans-serif;
+  --heb:'Heebo','Barlow',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a120a; --surface:#0f1b0f; --panel:#101d10; --card:#131f13;
+    --border:#20321f; --border-strong:#2d472c;
+    --ink:#dceadd; --muted:#8aa588; --faint:#5f7a5e;
+    --accent:#7ab870; --accent-soft:rgba(122,184,112,.13);
+    --amber:#c9a84c; --amber-soft:rgba(201,168,76,.14);
+    --good:#7ab870; --warn:#c9a84c; --crit:#e06a6a;
+    --shadow:0 1px 2px rgba(0,0,0,.45),0 12px 34px rgba(0,0,0,.38);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a120a; --surface:#0f1b0f; --panel:#101d10; --card:#131f13;
+  --border:#20321f; --border-strong:#2d472c;
+  --ink:#dceadd; --muted:#8aa588; --faint:#5f7a5e;
+  --accent:#7ab870; --accent-soft:rgba(122,184,112,.13);
+  --amber:#c9a84c; --amber-soft:rgba(201,168,76,.14);
+  --good:#7ab870; --warn:#c9a84c; --crit:#e06a6a;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 12px 34px rgba(0,0,0,.38);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;scroll-padding-top:72px;}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--disp);font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{text-wrap:balance;line-height:1.1;margin:0;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+.heb{font-family:var(--heb);direction:rtl;unicode-bidi:isolate;}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);}
+
+/* ============ HEADER ============ */
+.topbar{
+  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+}
+.topbar-in{max-width:1080px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px;}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.01em;font-size:15px;}
+.brand .dot{width:10px;height:10px;border-radius:2px;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.brand small{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:400;}
+.topnav{margin-inline-start:auto;display:flex;gap:20px;}
+.topnav a{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.topnav a:hover{color:var(--accent);text-decoration:none;}
+.theme-btn{background:none;border:1px solid var(--border-strong);color:var(--muted);border-radius:5px;width:32px;height:32px;cursor:pointer;font-size:14px;line-height:1;display:grid;place-items:center;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(max-width:720px){.topnav{display:none;}}
+
+/* ============ LAYOUT ============ */
+main{max-width:1080px;margin:0 auto;padding:0 24px 96px;}
+.section{padding:52px 0 8px;}
+.section-head{display:flex;flex-direction:column;gap:8px;margin-bottom:26px;max-width:var(--measure);}
+.section-head h2{font-size:clamp(1.5rem,3.4vw,2.05rem);font-weight:800;letter-spacing:-.02em;}
+.section-head p{color:var(--muted);font-size:1.02rem;}
+.prose{max-width:var(--measure);}
+.prose p+p{margin-top:14px;}
+
+/* ============ HERO ============ */
+.hero{padding:64px 0 20px;border-bottom:1px solid var(--border);}
+.hero h1{font-size:clamp(2.4rem,6.5vw,4rem);font-weight:800;letter-spacing:-.035em;margin:16px 0 0;}
+.hero .lede{max-width:60ch;margin-top:18px;font-size:1.18rem;color:var(--muted);line-height:1.55;}
+.hero .lede b{color:var(--ink);font-weight:600;}
+.metatape{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px;font-family:var(--mono);font-size:.74rem;color:var(--faint);}
+.metatape span b{color:var(--muted);font-weight:500;}
+
+/* ============ PILLS / CHIPS ============ */
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:100px;border:1px solid;white-space:nowrap;}
+.pill.rec{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,transparent);background:var(--accent-soft);}
+.pill.later{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:var(--amber-soft);}
+.pill.avoid{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,transparent);background:color-mix(in srgb,var(--crit) 10%,transparent);}
+.pill.now{color:var(--bg);background:var(--accent);border-color:var(--accent);}
+
+/* ============ STACK PANEL ============ */
+.stack{border:1px solid var(--border);background:var(--panel);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.stack-row{display:grid;grid-template-columns:150px 1fr auto;gap:18px;align-items:center;padding:15px 20px;border-top:1px solid var(--border);}
+.stack-row:first-child{border-top:none;}
+.stack-row .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);}
+.stack-row .v{font-size:.98rem;}
+.stack-row .v b{font-weight:700;}
+.stack-row .v small{display:block;color:var(--muted);font-size:.82rem;margin-top:2px;font-family:var(--disp);}
+@media(max-width:640px){.stack-row{grid-template-columns:1fr;gap:6px;}.stack-row .pill{justify-self:start;}}
+
+/* ============ EVIDENCE GRID ============ */
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:26px;}
+.ev{border:1px solid var(--border);border-radius:9px;padding:13px 15px;background:var(--card);}
+.ev .n{font-family:var(--mono);font-weight:500;font-size:1.35rem;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+.ev .l{font-size:.82rem;color:var(--muted);margin-top:3px;line-height:1.35;}
+
+/* ============ REQUIREMENT CARDS ============ */
+.reqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.req{border:1px solid var(--border);border-radius:11px;padding:18px;background:var(--card);border-top:3px solid var(--accent);}
+.req h3{font-size:1.05rem;font-weight:700;margin-bottom:6px;}
+.req p{font-size:.92rem;color:var(--muted);line-height:1.5;}
+.req .tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:9px;}
+
+/* ============ MODEL TREE ============ */
+.tree{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:10px 8px;overflow-x:auto;}
+.node{display:flex;align-items:baseline;gap:10px;padding:7px 12px;border-radius:7px;}
+.node:hover{background:var(--accent-soft);}
+.node .name{font-weight:700;font-size:.98rem;}
+.node .desc{color:var(--muted);font-size:.86rem;}
+.node .card-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);border:1px solid var(--border-strong);border-radius:100px;padding:1px 7px;margin-inline-start:auto;white-space:nowrap;}
+.d1{margin-inline-start:0;} .d2{margin-inline-start:24px;} .d3{margin-inline-start:48px;} .d4{margin-inline-start:72px;}
+.node.dim .name{color:var(--muted);font-weight:600;}
+.tree-side{border-inline-start:2px solid var(--border);}
+
+.callout{border:1px solid var(--border-strong);border-inline-start:4px solid var(--amber);background:var(--amber-soft);border-radius:0 10px 10px 0;padding:16px 18px;margin-top:16px;max-width:var(--measure);}
+.callout h3{font-size:.98rem;font-weight:700;margin-bottom:6px;color:var(--ink);}
+.callout p{font-size:.92rem;color:var(--muted);line-height:1.55;}
+.callout code{font-family:var(--mono);font-size:.84em;background:color-mix(in srgb,var(--amber) 16%,transparent);padding:1px 5px;border-radius:4px;color:var(--ink);}
+
+/* ============ FLOW (trainee) ============ */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border:1px solid var(--border);border-radius:11px;overflow:hidden;background:var(--card);}
+.step{padding:16px 18px;border-inline-start:1px solid var(--border);}
+.step:first-child{border-inline-start:none;}
+.step .s{font-family:var(--mono);font-size:.66rem;color:var(--accent);letter-spacing:.08em;}
+.step h3{font-size:.96rem;font-weight:700;margin:7px 0 5px;}
+.step p{font-size:.85rem;color:var(--muted);line-height:1.45;}
+@media(max-width:620px){.step{border-inline-start:none;border-top:1px solid var(--border);}.step:first-child{border-top:none;}}
+
+/* ============ DECISION TABLE ============ */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);}
+table{border-collapse:collapse;width:100%;min-width:720px;background:var(--card);}
+th,td{text-align:start;padding:14px 16px;border-top:1px solid var(--border);vertical-align:top;font-size:.9rem;}
+thead th{border-top:none;background:var(--panel);font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:500;}
+tbody td:first-child{font-weight:700;font-size:.94rem;width:150px;}
+td .why{color:var(--muted);line-height:1.5;}
+td .ref{font-family:var(--mono);font-size:.72rem;color:var(--accent);}
+tr:hover td{background:var(--accent-soft);}
+
+/* ============ ROADMAP ============ */
+.phases{display:flex;flex-direction:column;gap:0;position:relative;}
+.phase{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:0 0 26px;}
+.phase-rail{display:flex;flex-direction:column;align-items:center;}
+.phase-num{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-weight:500;font-size:.9rem;background:var(--accent);color:var(--bg);flex-shrink:0;}
+.phase.soft .phase-num{background:var(--panel);color:var(--muted);border:1px solid var(--border-strong);}
+.phase-line{width:2px;flex:1;background:var(--border);margin-top:6px;}
+.phase:last-child .phase-line{display:none;}
+.phase-body{padding-top:4px;}
+.phase-body h3{font-size:1.12rem;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.phase-body .goal{color:var(--muted);font-size:.9rem;margin:4px 0 10px;}
+.phase-body ul{margin:0;padding-inline-start:18px;color:var(--muted);font-size:.9rem;line-height:1.6;}
+.phase-body ul b{color:var(--ink);font-weight:600;}
+
+/* ============ DECISIONS NEEDED ============ */
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;}
+.q{border:1px solid var(--border);border-radius:11px;padding:17px;background:var(--card);}
+.q .qn{font-family:var(--mono);font-size:.66rem;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;}
+.q h3{font-size:1rem;font-weight:700;margin:7px 0 5px;}
+.q p{font-size:.87rem;color:var(--muted);line-height:1.5;}
+.q .lean{margin-top:9px;font-size:.82rem;color:var(--ink);}
+.q .lean b{color:var(--accent);}
+
+/* ============ SOURCES / FOOTER ============ */
+.sources{margin-top:14px;border-top:1px solid var(--border);padding-top:20px;}
+.sources ol{margin:0;padding-inline-start:20px;color:var(--muted);font-size:.82rem;line-height:1.7;}
+.sources a{word-break:break-word;}
+footer{max-width:1080px;margin:0 auto;padding:26px 24px 60px;border-top:1px solid var(--border);color:var(--faint);font-family:var(--mono);font-size:.72rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.divider{height:1px;background:var(--border);margin:8px 0 0;}
+</style>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><span class="dot"></span>Big&nbsp;&amp;&nbsp;Strong <small>Blueprint</small></div>
+    <nav class="topnav">
+      <a href="#program">Program</a>
+      <a href="#model">Data model</a>
+      <a href="#trainee">Trainee</a>
+      <a href="#decisions">Decisions</a>
+      <a href="#roadmap">Roadmap</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Architecture &amp; research · v1</div>
+    <h1>Building the coach&nbsp;&amp;&nbsp;trainee app, properly.</h1>
+    <p class="lede">A plan for turning the check-in calendar into a real product: coaches author periodized programs, trainees sign in and train from them — <b>offline at the gym, in Hebrew, on their phone</b>. Grounded in one real 12-week program, not a toy model.</p>
+    <div class="metatape">
+      <span><b>Prepared for</b> the coach (you)</span>
+      <span><b>Date</b> Sep 2026</span>
+      <span><b>Reference program</b> <span class="heb">כדורסל · פגרה</span> — 12 wk</span>
+      <span><b>Status</b> pre-build research</span>
+    </div>
+  </section>
+
+  <!-- RECOMMENDATION -->
+  <section class="section" id="stack">
+    <div class="section-head">
+      <div class="eyebrow">The recommendation, in one screen</div>
+      <h2>What to build on</h2>
+      <p>Every choice below is defended further down with current sources. This is the short version so the rest reads as evidence, not suspense.</p>
+    </div>
+    <div class="stack">
+      <div class="stack-row"><span class="k">Delivery</span><span class="v"><b>Installable PWA</b><small>One codebase for iPhone, Android and desktop. Home-screen install, no App Store.</small></span><span class="pill rec">Recommended</span></div>
+      <div class="stack-row"><span class="k">Backend</span><span class="v"><b>Supabase</b> (Postgres + Auth + RLS)<small>Relational data fits a periodized program far better than a document store; generous free tier.</small></span><span class="pill rec">Recommended</span></div>
+      <div class="stack-row"><span class="k">Sign-in</span><span class="v"><b>Coach-invite → magic link</b><small>No passwords. The coach adds a trainee; they tap a link and they're in.</small></span><span class="pill rec">Recommended</span></div>
+      <div class="stack-row"><span class="k">Offline</span><span class="v"><b>Local-first, sync on reconnect</b><small>The phone is the source of truth mid-workout; it syncs when signal returns.</small></span><span class="pill rec">Recommended</span></div>
+      <div class="stack-row"><span class="k">Language</span><span class="v"><b>Hebrew UI (RTL) · English exercise names</b><small>App and program prose in Hebrew, right-to-left; exercise names default to English (RDL, Pallof press) — as your program already writes them.</small></span><span class="pill rec">Decided</span></div>
+      <div class="stack-row"><span class="k">Native apps</span><span class="v"><b>Not yet</b><small>Revisit only if you need App Store presence or richer notifications.</small></span><span class="pill later">Later</span></div>
+    </div>
+  </section>
+
+  <!-- PROGRAM -->
+  <section class="section" id="program">
+    <div class="section-head">
+      <div class="eyebrow">Why the model has to be serious</div>
+      <h2>What Jonathan's program actually contains</h2>
+      <p>You sent a real 12-week basketball off-season plan. It is not "a workout with a label." Everything the app stores has to hold what this document holds — otherwise a coach can't author it and a trainee can't follow it.</p>
+    </div>
+    <div class="ev-grid">
+      <div class="ev"><div class="n">12</div><div class="l">weeks, in 4 training blocks</div></div>
+      <div class="ev"><div class="n">4</div><div class="l">blocks: return → max strength → plyo → peak</div></div>
+      <div class="ev"><div class="n">wk 6</div><div class="l">planned deload + full test battery</div></div>
+      <div class="ev"><div class="n">RIR</div><div class="l">+ %1RM + tempo, scaling week to week</div></div>
+      <div class="ev"><div class="n">0–10</div><div class="l">morning-pain index, tracked daily</div></div>
+      <div class="ev"><div class="n">110<small style="font-size:.6em"> kg</small></div><div class="l">trap-bar 5RM baseline → +15–20% target</div></div>
+    </div>
+    <div class="reqs">
+      <div class="req"><span class="tag">Requirement 01</span><h3>Periodization</h3><p>Program → blocks → weeks → days → sessions. Parameters (sets, reps, RIR, intensity, rest) change per week within a block. Exercises "enter in week 5." The structure carries the logic.</p></div>
+      <div class="req"><span class="tag">Requirement 02</span><h3>Substitutions with reasons</h3><p>Your "iterations." Trap-bar instead of conventional deadlift; supported row instead of bent-over — each swap tied to a cause (a limitation, or later home vs. studio vs. gym). The reason travels with the swap.</p></div>
+      <div class="req"><span class="tag">Requirement 03</span><h3>Autoregulation loop</h3><p>The plan reacts to the athlete: morning-pain trend → freeze or progress; velocity drop of 20–25% ends a set. Trainee input feeds back into what they do next.</p></div>
+      <div class="req"><span class="tag">Requirement 04</span><h3>Testing &amp; goals</h3><p>Batteries at weeks 2 / 6 / 12 with a fixed protocol, gate conditions to advance a block, and measurable targets (CMJ +3–5&nbsp;cm, sprint −0.1&nbsp;s). Progress is defined, not vibes.</p></div>
+    </div>
+  </section>
+
+  <!-- DATA MODEL -->
+  <section class="section" id="model">
+    <div class="section-head">
+      <div class="eyebrow">The backbone</div>
+      <h2>The data model</h2>
+      <p>One shape that fits the program above and everything the trainee and coach do to it. A program is a nested template; a trainee gets an <em>assignment</em> of it against real calendar dates, and their logs attach to that.</p>
+    </div>
+    <div class="tree">
+      <div class="node d1"><span class="name">Athlete</span><span class="desc">name, sign-in, baseline (height / weight / role), limitations</span><span class="card-tag">table</span></div>
+      <div class="node d1"><span class="name">Exercise</span><span class="desc">library entry — English name (Hebrew alias), cues, video, muscles</span><span class="card-tag">table</span></div>
+      <div class="node d2 tree-side"><span class="name">Variation</span><span class="desc">alt of an exercise, keyed by reason: <span class="heb">כאב</span>/injury · equipment · home / studio / gym</span><span class="card-tag">table</span></div>
+      <div class="node d1"><span class="name">Program</span><span class="desc">title, sport, period, duration — a reusable template</span><span class="card-tag">table</span></div>
+      <div class="node d2 tree-side"><span class="name">Block</span><span class="desc">mesocycle — focus, week range, deload flag</span></div>
+      <div class="node d3 tree-side"><span class="name">Week</span><span class="desc">parameter set: sets / reps / RIR / intensity / rest</span></div>
+      <div class="node d4 tree-side"><span class="name">Day → Session</span><span class="desc">weekday slot; session = warmup / plyo / strength / core sections</span></div>
+      <div class="node d4 tree-side dim"><span class="name">↳ Exercise instance</span><span class="desc">exercise + prescribed sets×reps, %/RIR, tempo, superset group, notes</span></div>
+      <div class="node d1"><span class="name">Assignment</span><span class="desc">a Program given to an Athlete, anchored to a start date on the real calendar</span><span class="card-tag">table</span></div>
+      <div class="node d2 tree-side"><span class="name">Set log</span><span class="desc">what the trainee actually did — weight, reps, RIR, done ✓</span></div>
+      <div class="node d2 tree-side"><span class="name">Check-in</span><span class="desc">morning-pain score, notes to coach, session feedback</span></div>
+      <div class="node d2 tree-side"><span class="name">Test result</span><span class="desc">CMJ, sprint splits, 5-10-5, 5RM at weeks 2 / 6 / 12</span></div>
+    </div>
+    <div class="callout">
+      <h3>The one hard modeling decision — substitutions</h3>
+      <p>An <code>Exercise instance</code> points at a library <code>Exercise</code>, and that exercise carries <code>Variation</code>s tagged by <em>reason</em>. So the trainee taps "I'm at home" or "this hurts" and the app offers the coach-approved swap — the same mechanism that already produced trap-bar over conventional deadlift in Jonathan's plan. Get this relationship right and the whole "iterations" feature falls out of it for free.</p>
+    </div>
+  </section>
+
+  <!-- TRAINEE -->
+  <section class="section" id="trainee">
+    <div class="section-head">
+      <div class="eyebrow"><span class="pill now" style="margin-inline-end:8px">Get right first</span> Your stated priority</div>
+      <h2>Trainee sign-in &amp; the first workout</h2>
+      <p>A trainee's experience <em>is</em> their program on a screen. The bar: from an invite to logging their first set, with zero passwords and no confusion — even on gym wifi that barely works.</p>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="s">01 · INVITE</div><h3>Coach adds them</h3><p>You enter a name + phone/email. They get one link. No account form to fill.</p></div>
+      <div class="step"><div class="s">02 · TAP</div><h3>Magic link</h3><p>Tapping the link creates the account and signs them in at once — the pattern that took Notion's completion from 64%→87%.</p></div>
+      <div class="step"><div class="s">03 · INSTALL</div><h3>Add to Home Screen</h3><p>A short prompt to install the PWA. This is also what unlocks push notifications on iPhone.</p></div>
+      <div class="step"><div class="s">04 · TODAY</div><h3>Their week, their day</h3><p>Opens straight to today's session: warmup → strength → core, each exercise with target sets×reps and RIR.</p></div>
+      <div class="step"><div class="s">05 · LOG</div><h3>Check &amp; note</h3><p>Tick each set, log weight/reps, drop their morning-pain score and a note back to you. Works offline.</p></div>
+    </div>
+    <div class="prose" style="margin-top:22px">
+      <p style="color:var(--muted)">Two things make or break this and both have clear answers below: <b style="color:var(--ink)">passwordless invite auth</b> (so onboarding isn't a wall) and <b style="color:var(--ink)">offline-first logging</b> (so a dead signal between sets never loses a workout). Row-level security means a trainee only ever sees their own data — enforced by the database, not by hoping the UI hides it.</p>
+    </div>
+  </section>
+
+  <!-- COACH -->
+  <section class="section" id="coach">
+    <div class="section-head">
+      <div class="eyebrow">The other side</div>
+      <h2>The coach side</h2>
+      <p>This is where today's <span class="mono">coach.html</span> grows up. The check-in calendar you already have becomes the review surface; a program builder feeds it.</p>
+    </div>
+    <div class="reqs">
+      <div class="req"><span class="tag">Author</span><h3>Program builder</h3><p>Compose a program once — blocks, weekly parameters, sessions, exercises, substitutions — then assign it to a trainee with a start date. Reuse it for the next athlete.</p></div>
+      <div class="req"><span class="tag">Review</span><h3>Two check-ins a week</h3><p>Exactly your workflow: the week dashboard, colour per trainee, who did what, their notes and pain scores surfaced — no digging.</p></div>
+      <div class="req"><span class="tag">React</span><h3>Adjust the plan</h3><p>Pain trending up? Freeze load or swap an exercise for that athlete without touching the template. No in-app chat — the trainee's check-in notes are the channel back to you.</p></div>
+    </div>
+  </section>
+
+  <!-- DECISIONS -->
+  <section class="section" id="decisions">
+    <div class="section-head">
+      <div class="eyebrow">The research, defended</div>
+      <h2>Platform decisions</h2>
+      <p>Each row is a call I'm making, why, and the current source behind it. Verdicts are mine to argue with — that's the point of writing them down.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Decision</th><th>Verdict</th><th>Why</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Delivery: PWA vs native</td>
+            <td><span class="pill rec">PWA now</span></td>
+            <td class="why">On iOS 26 a home-screen site opens as a real app and can send push (since 16.4, once installed). One codebase covers all devices. Trade-off: no App Store, no background sync — neither blocks a v1 coaching app.</td>
+            <td class="ref">[1][2]</td>
+          </tr>
+          <tr>
+            <td>Backend: Supabase vs Firebase</td>
+            <td><span class="pill rec">Supabase</span></td>
+            <td class="why">A periodized program is deeply relational (joins across program → week → exercise → log). Postgres + row-level security fits it directly; Firestore would force denormalization. Free tier: 500&nbsp;MB DB, 50k monthly users, unlimited API calls.</td>
+            <td class="ref">[3][4]</td>
+          </tr>
+          <tr>
+            <td>Auth: how trainees get in</td>
+            <td><span class="pill rec">Invite + magic link</span></td>
+            <td class="why">Lowest-friction onboarding for an invited audience; removing passwords measurably lifts completion. Email magic link primary; SMS only as fallback (agencies advise against SMS-only). Passkeys can come later for returning users.</td>
+            <td class="ref">[5]</td>
+          </tr>
+          <tr>
+            <td>Offline strategy</td>
+            <td><span class="pill rec">Local-first</span></td>
+            <td class="why">Treat offline as the default, sync as optimization. Start simple (IndexedDB queue + sync on reconnect); adopt a sync engine like PowerSync only if conflict handling gets real. The gym is the whole use case, so this isn't optional.</td>
+            <td class="ref">[6]</td>
+          </tr>
+          <tr>
+            <td>Hebrew / RTL</td>
+            <td><span class="pill rec">Foundation</span></td>
+            <td class="why">Set <code style="font-family:var(--mono);font-size:.85em">dir="rtl"</code> at the root; use logical CSS (<span class="mono">margin-inline</span>, <span class="mono">text-align:start</span>) so layout mirrors automatically; flip only directional icons; Heebo/Assistant for Hebrew type; keep numbers &amp; kg/%/RIR LTR inside RTL text.</td>
+            <td class="ref">[7]</td>
+          </tr>
+          <tr>
+            <td>Frontend framework</td>
+            <td><span class="pill later">Decide at build</span></td>
+            <td class="why">The current apps are hand-written single-file HTML. That won't scale to auth + sync + a program builder. Lean recommendation: a light framework (Svelte or React) + Vite, with first-class RTL and PWA support. Confirmed when Phase 1 starts.</td>
+            <td class="ref">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout" style="border-inline-start-color:var(--accent);background:var(--accent-soft);">
+      <h3>Security is a database job, not a UI job</h3>
+      <p>Because trainee data is health-adjacent, access is enforced with Postgres row-level security: a trainee can read and write only rows that belong to them; a coach sees only their own athletes. The UI never becomes the thing standing between one client and another's data.</p>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="section" id="roadmap">
+    <div class="section-head">
+      <div class="eyebrow">Order of operations</div>
+      <h2>Roadmap</h2>
+      <p>Sequenced so something real is usable at the end of every phase, and so the priority you named — trainees signing in and training — arrives early rather than after a year of backend.</p>
+    </div>
+    <div class="phases">
+      <div class="phase">
+        <div class="phase-rail"><div class="phase-num">0</div><div class="phase-line"></div></div>
+        <div class="phase-body">
+          <h3>Model Jonathan's program <span class="pill now">start here</span></h3>
+          <p class="goal">Prove the data model by encoding one real program into it — on paper / JSON, before any backend.</p>
+          <ul><li>Turn the 12-week plan into the <b>Program → Block → Week → Session → Exercise</b> shape.</li><li>Encode the substitutions and their reasons.</li><li>If it fits cleanly, the model is right. If it fights, fix it now while it's cheap.</li></ul>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-rail"><div class="phase-num">1</div><div class="phase-line"></div></div>
+        <div class="phase-body">
+          <h3>Backend + trainee sign-in</h3>
+          <p class="goal">A trainee can be invited, sign in with a magic link, and see a program that's really theirs.</p>
+          <ul><li>Stand up Supabase: schema, <b>row-level security</b>, auth.</li><li>Coach invite flow → magic link onboarding.</li><li>Read-only "my week / my day" trainee view of an assigned program.</li></ul>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-rail"><div class="phase-num">2</div><div class="phase-line"></div></div>
+        <div class="phase-body">
+          <h3>Logging, offline, check-ins</h3>
+          <p class="goal">Trainees train from it for real — the whole reason it exists.</p>
+          <ul><li>Set logging, morning-pain score, notes back to coach.</li><li><b>Offline-first</b> capture with sync on reconnect.</li><li>Substitution picker: home / studio / "it hurts."</li></ul>
+        </div>
+      </div>
+      <div class="phase soft">
+        <div class="phase-rail"><div class="phase-num">3</div><div class="phase-line"></div></div>
+        <div class="phase-body">
+          <h3>Coach program builder</h3>
+          <p class="goal">Author and assign programs in-app instead of by hand — and fold in your existing calendar.</p>
+          <ul><li>Build blocks / weeks / sessions / substitutions visually.</li><li>Assign to a trainee against a start date.</li><li>Migrate the <span class="mono">coach.html</span> check-in dashboard onto live data.</li></ul>
+        </div>
+      </div>
+      <div class="phase soft">
+        <div class="phase-rail"><div class="phase-num">4</div><div class="phase-line"></div></div>
+        <div class="phase-body">
+          <h3>Polish &amp; depth</h3>
+          <p class="goal">The things that make it feel finished.</p>
+          <ul><li>Testing batteries, goal tracking, progress charts.</li><li>Push notifications, exercise videos, optional full-English UI.</li><li>Autoregulation prompts from pain / velocity trends.</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECISIONS LOCKED -->
+  <section class="section">
+    <div class="section-head">
+      <div class="eyebrow">Settled · Sep 2026</div>
+      <h2>Decisions — locked</h2>
+      <p>The scope questions are answered. These now constrain the build; each one made the app simpler, not more complex.</p>
+    </div>
+    <div class="qs">
+      <div class="q"><div class="qn">Decided A</div><h3>Language</h3><p>Hebrew UI, right-to-left. Exercise names default to English — the way the program already writes them.</p><p class="lean">→ <b>English exercise names, Hebrew everything else.</b></p></div>
+      <div class="q"><div class="qn">Decided B</div><h3>Maintainer</h3><p>You maintain it. So the stack is chosen for the fewest moving parts a non-team can keep running.</p><p class="lean">→ <b>Optimize for one person.</b></p></div>
+      <div class="q"><div class="qn">Decided C</div><h3>Messaging</h3><p>No in-app chat or comment threads. The trainee's check-in notes are the only channel back to the coach.</p><p class="lean">→ <b>Notes only, no messaging.</b></p></div>
+      <div class="q"><div class="qn">Decided D</div><h3>Scale</h3><p>Tens of trainees. Sits comfortably inside free tiers and rules out any premature scaling work.</p><p class="lean">→ <b>Design for tens, not thousands.</b></p></div>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section class="section sources">
+    <div class="eyebrow" style="margin-bottom:12px">Sources · retrieved Sep 2026</div>
+    <ol>
+      <li>MobiLoud — <a href="https://www.mobiloud.com/blog/progressive-web-apps-ios/">Do Progressive Web Apps Work on iOS? (2026)</a></li>
+      <li>MagicBell — <a href="https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide">PWA iOS Limitations &amp; Safari Support (2026)</a></li>
+      <li>DesignRevision — <a href="https://designrevision.com/blog/supabase-vs-firebase">Firebase vs Supabase 2026</a></li>
+      <li>AgentDeals — <a href="https://agentdeals.dev/supabase-vs-firebase">Supabase vs Firebase Free Tier Deep Dive (2026)</a></li>
+      <li>Security Boulevard — <a href="https://securityboulevard.com/2026/03/magic-links-passkeys-otp-and-social-login-which-passwordless-method-fits-your-application/">Magic Links, Passkeys, OTP &amp; Social Login (2026)</a></li>
+      <li>PowerSync — <a href="https://powersync.com/blog/offline-first-apps-made-simple-supabase-powersync">Offline-First Apps Made Simple: Supabase + PowerSync</a></li>
+      <li>Skills IL — <a href="https://agentskills.co.il/en/skills/localization/hebrew-rtl-best-practices">Hebrew RTL Best Practices</a>; TrueCoach / Trainerize feature references.</li>
+    </ol>
+  </section>
+</main>
+
+<footer>
+  <span>Big &amp; Strong · product blueprint · v1</span>
+  <span>Draft for discussion — not final</span>
+</footer>
+
+<script>
+(function(){
+  var btn=document.getElementById('themeBtn');
+  var root=document.documentElement;
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    var isDark = cur ? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  });
+})();
+</script>
